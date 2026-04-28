@@ -24,7 +24,8 @@ def load_documents():
 # 3. DARABOLÁS (Chunking)
 def split_documents(documents: list[Document]):
     all_chunks = []
-    para_pattern = r'(\d+\.\s§)'
+    #para_pattern = r'(\d+\.\s§)'
+    para_pattern = r'(\d+\.\s§|\d+\.\s?[Cc]ikk|\(\d+\))'
 
     # 1. Csoportosítsuk az oldalakat forrásfájlonként 📂
     docs_by_source = {}
@@ -236,17 +237,17 @@ def main():
 
     test_questions = [
         # --- SZJA Törvény ---
-        "Ki jogosult a 25 év alatti fiatalok kedvezményére és meddig vehető igénybe?",
+        #"Ki jogosult a 25 év alatti fiatalok kedvezményére és meddig vehető igénybe?",
         #"Milyen szabályok vonatkoznak a családi kedvezményre? Mekkora az összege egy eltartott esetén?",
 
         # --- Polgári Törvénykönyv (Ptk.) ---
-        "Mik a szerződés érvénytelenségének általános esetei a Ptk. szerint?",
+        #"Mik a szerződés érvénytelenségének általános esetei a Ptk. szerint?",
         #"Mi a különbség a kártérítés és a kártalanítás között a magyar magánjogban?",
         #"Hogyan jön létre egy érvényes adásvételi szerződés az új Ptk. alapján?",
 
         # --- GDPR (Adatvédelem) ---
-        #"Melyek az érintettek jogai a GDPR rendelet alapján? Sorolj fel legalább ötöt!",
-        #"Mit jelent az 'elfeledtetéshez való jog' (törléshez való jog) és mikor korlátozható?",
+        "Melyek az érintettek jogai a GDPR rendelet alapján? Sorolj fel legalább ötöt!",
+        "Mit jelent az 'elfeledtetéshez való jog' (törléshez való jog) és mikor korlátozható?",
         "Milyen feltételek mellett tekinthető az adatkezeléshez adott hozzájárulás érvényesnek?",
 
         # --- Cross-topic (Összetettebb) ---
