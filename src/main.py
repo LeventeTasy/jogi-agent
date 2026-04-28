@@ -24,42 +24,46 @@ def load_documents():
 # 3. DARABOLÁS (Chunking)
 def split_documents(documents: list[Document]):
     all_chunks = []
-
-    # Ez a minta keresi meg a paragrafusokat (pl. "64. §")
-    # A zárójel azért kell, hogy a re.split ne dobja el a mintát, hanem tartsa meg!
     para_pattern = r'(\d+\.\s§)'
 
+    # 1. Csoportosítsuk az oldalakat forrásfájlonként 📂
+    docs_by_source = {}
     for doc in documents:
-        full_text = doc.page_content
         source = doc.metadata.get("source")
-        page = doc.metadata.get("page")
+        if source not in docs_by_source:
+            docs_by_source[source] = []
+        docs_by_source[source].append(doc)
 
-        # Szétvágjuk a szöveget a paragrafus jelek mentén
+    # 2. Dolgozzuk fel a fájlokat egyben
+    for source, pages in docs_by_source.items():
+        # Sorba rendezzük az oldalakat (biztos, ami biztos)
+        pages.sort(key=lambda x: x.metadata.get("page", 0))
+
+        # Összefűzzük az összes oldalt egy nagy szöveggé ✨
+        full_text = "\n".join([p.page_content for p in pages])
+
+        # Szétvágjuk a paragrafus jelek mentén
         parts = re.split(para_pattern, full_text)
 
-        # A re.split eredménye egy lista lesz: ['', '1. §', 'Szöveg...', '2. §', 'Szöveg...']
-        # Az első elem gyakran üres, ha a szöveg rögtön paragrafussal kezdődik.
+        current_para = "Bevezető rész"  # Ha a legelején nincs §
 
-        current_para = "Ismeretlen §"
-
-        # Bejárjuk a darabokat és összerakjuk a címet a tartalommal
         for i in range(len(parts)):
             part = parts[i].strip()
             if not part:
                 continue
 
-            # Ha a darab egy paragrafus jelzés (pl. "64. §")
+            # Ha ez egy paragrafus jel (pl. "64. §")
             if re.match(para_pattern, part):
                 current_para = part
             else:
-                # Ez maga a szöveges tartalom a következő paragrafusig
-                # Létrehozunk egy új Document objektumot
+                # Ez a tartalom. Készítünk belőle egy chunk-ot.
+                # Megpróbáljuk megtippelni az oldalszámot (opcionális, de jó, ha marad)
                 new_chunk = Document(
                     page_content=f"{current_para} {part}",
                     metadata={
                         "source": source,
-                        "page": page,
-                        "paragrafus": current_para  # Itt a lényeg! 👑
+                        "paragrafus": current_para,
+                        "page": "multiple"  # Mivel már nem egy oldalhoz kötődik
                     }
                 )
                 all_chunks.append(new_chunk)
@@ -233,28 +237,28 @@ def main():
     test_questions = [
         # --- SZJA Törvény ---
         "Ki jogosult a 25 év alatti fiatalok kedvezményére és meddig vehető igénybe?",
-        "Milyen szabályok vonatkoznak a családi kedvezményre? Mekkora az összege egy eltartott esetén?",
+        #"Milyen szabályok vonatkoznak a családi kedvezményre? Mekkora az összege egy eltartott esetén?",
 
         # --- Polgári Törvénykönyv (Ptk.) ---
         "Mik a szerződés érvénytelenségének általános esetei a Ptk. szerint?",
-        "Mi a különbség a kártérítés és a kártalanítás között a magyar magánjogban?",
-        "Hogyan jön létre egy érvényes adásvételi szerződés az új Ptk. alapján?",
+        #"Mi a különbség a kártérítés és a kártalanítás között a magyar magánjogban?",
+        #"Hogyan jön létre egy érvényes adásvételi szerződés az új Ptk. alapján?",
 
         # --- GDPR (Adatvédelem) ---
-        "Melyek az érintettek jogai a GDPR rendelet alapján? Sorolj fel legalább ötöt!",
-        "Mit jelent az 'elfeledtetéshez való jog' (törléshez való jog) és mikor korlátozható?",
+        #"Melyek az érintettek jogai a GDPR rendelet alapján? Sorolj fel legalább ötöt!",
+        #"Mit jelent az 'elfeledtetéshez való jog' (törléshez való jog) és mikor korlátozható?",
         "Milyen feltételek mellett tekinthető az adatkezeléshez adott hozzájárulás érvényesnek?",
 
         # --- Cross-topic (Összetettebb) ---
         "Hogyan kell kezelni a munkavállaló adatait a munkaviszony során a GDPR és az Mt. szerint?"
     ]
 
-    """
+
     # Ezt csak dobd bele egy for ciklusba és mehet a query_rag()! 🚀
     for question in test_questions:
         print(f"\n🔍 TESZTELÉS: {question}")
         query_rag(question)
-    """
+
 
     query_text = input(": ")
 
