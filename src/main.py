@@ -94,14 +94,37 @@ def query_rag(query_text: str):
     )
 
     PROMPT_TEMPLATE = """
-    Válaszold meg a kérdéseket csak az alábbi kontext alapján:
+    Te egy jogi asszisztens vagy, aki KIZÁRÓLAG a megadott kontextus alapján válaszol.
+    
+    KONTEXT:
     {context}
-
+    
     ---
-    Kérdés: {question}
+    
+    SZABÁLYOK (kritikus):
+    - CSAK a fenti kontextusban szereplő információkat használhatod
+    - TILOS bármilyen információt kitalálni vagy feltételezni
+    - Csak olyan paragrafust / cikket hivatkozhatsz, ami konkrétan szerepel a kontextusban
+    - Ha nem egyértelmű a pontos cikk vagy paragrafus, MONDD KI hogy nem állapítható meg
+    - Különböztesd meg:
+      - jogszabályi cikkek / paragrafusok
+      - preambulum bekezdések (pl. (32))
+    - NE keverd ezeket össze
+    - Minden állítást támassz alá forrással
+    - Ha több különböző forrás ellentmond egymásnak, jelezd az ellentmondást
+    
+    FORMÁTUM:
+    - Adj egy rövid, pontos választ
+    - Utána: "Források:" rész
+    - Maximum 2-3 releváns hivatkozás
+    
+    ---
+    
+    KÉRDÉS:
+    {question}
     """
 
-    results = db.similarity_search_with_score(query_text, k=5)
+    results = db.similarity_search_with_score(query_text, k=3)
 
     context_text = "\n\n--\n\n".join(doc.page_content for doc, _score in results)
     prompt_template = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
