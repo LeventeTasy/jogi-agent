@@ -1,0 +1,24 @@
+[project]
+name = "jogi_agent"
+version = "0.1.0"
+description = "jogi-agent using crewAI"
+authors = [{ name = "Your Name", email = "you@example.com" }]
+requires-python = ">=3.10,<3.14"
+dependencies = [
+    "crewai[tools]==1.14.4"
+]
+
+[project.scripts]
+jogi_agent = "jogi_agent.main:run"
+run_crew = "jogi_agent.main:run"
+train = "jogi_agent.main:train"
+replay = "jogi_agent.main:replay"
+test = "jogi_agent.main:test"
+run_with_trigger = "jogi_agent.main:run_with_trigger"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.crewai]
+type = "crew"
