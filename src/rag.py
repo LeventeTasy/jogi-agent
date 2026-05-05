@@ -134,16 +134,30 @@ def query_rag(query_text: str):
         model="gemini-2.5-flash",  # A 2.5-flash lehet, hogy még túl új, a 1.5-flash a bombabiztos választás!
         temperature=0
     )
-
     response_text = llm.invoke(prompt)
+    sources = [doc.metadata.get("id", None) for doc, _score in
+               results]  # A results-ból szedjük a forrást, nem a válaszból!
+
+    """
     print("\nVÁLASZ:")
     print(response_text.content)  # .content kell, mert a válasz egy objektum!
 
     print("\nFORRÁSOK:")
-    sources = [doc.metadata.get("id", None) for doc, _score in
-               results]  # A results-ból szedjük a forrást, nem a válaszból!
     print(sources)
     print("-" * 50)
+    """
+
+    return f"\VÁLASZ:\n {response_text.content} \nFORRÁSOK:\n {sources}"
+
+def rag_tool(query_text: str) -> str :
+    documents = load_documents()
+    if not documents:
+        print("Girl, üres a mappa! Tegyél bele egy PDF-et! 💀")
+        return
+    chunks = split_documents(documents)
+    add_chroma(chunks)
+
+    return query_rag(query_text)
 
 # 6. A FŐFOLYAMAT (Slay Pipeline)
 def main():
@@ -200,7 +214,3 @@ def main():
     while query_text != "break":
         query_rag(query_text)
         query_text = input(": ")
-
-# Ez biztosítja, hogy csak akkor fusson le, ha ezt a fájlt indítod el!
-if __name__ == "__main__":
-    main()

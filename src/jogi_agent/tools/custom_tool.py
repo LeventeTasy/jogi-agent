@@ -1,7 +1,8 @@
 from crewai.tools import BaseTool
 from typing import Type
 from pydantic import BaseModel, Field
-
+from crewai.tools import tool
+from rag import rag_tool
 
 class MyCustomToolInput(BaseModel):
     """Input schema for MyCustomTool."""
@@ -17,3 +18,7 @@ class MyCustomTool(BaseTool):
     def _run(self, argument: str) -> str:
         # Implementation goes here
         return "this is an example of a tool output, ignore it and move along."
+
+@tool("RAG")
+def rag_tool(query_question: str) -> str:
+    return rag_tool(query_question)
