@@ -147,7 +147,7 @@ def query_rag(query_text: str):
     print("-" * 50)
     """
 
-    return f"\VÁLASZ:\n {response_text.content} \nFORRÁSOK:\n {sources}"
+    return f"VÁLASZ:\n {response_text.content} \nFORRÁSOK:\n {sources}"
 
 def rag_tool(query_text: str) -> str :
     documents = load_documents()
@@ -212,5 +212,8 @@ def main():
     query_text = input(": ")
 
     while query_text != "break":
-        query_rag(query_text)
+        print(query_rag(query_text))
         query_text = input(": ")
+
+if __name__ == "__main__":
+    main()
