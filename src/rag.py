@@ -12,6 +12,8 @@ from dotenv import load_dotenv
 DATA_PATH = "../pdf"  # Ide tedd a Munka Törvénykönyvét!
 CHROMA_PATH = "../chroma_db"  # Ennek a mappának a nevét muszáj megadni, ide menti az adatbázist!
 
+CHROMA_PATH = os.path.abspath(os.path.join(os.getcwd(), "chroma_db"))
+DATA_PATH = os.path.abspath(os.path.join(os.getcwd(), "pdf"))
 
 # 2. BEOLVASÁS
 def load_documents():
@@ -149,35 +151,31 @@ def query_rag(query_text: str):
 
     return f"VÁLASZ:\n {response_text.content} \nFORRÁSOK:\n {sources}"
 
-def rag_tool(query_text: str) -> str :
+def build_rag():
+    print("Rag építése elkezdődött!")
     documents = load_documents()
     if not documents:
-        print("Girl, üres a mappa! Tegyél bele egy PDF-et! 💀")
+        print("A mappa üres, töltse fel PDF-ekkel!")
         return
-    chunks = split_documents(documents)
-    add_chroma(chunks)
 
-    return query_rag(query_text)
+    print(f"{len(documents)} oldal beolvasva. ✨")
+
+    try:
+        chunks = split_documents(documents)
+        print(f"{len(chunks)} szeletre vágva. 🍕")
+        add_chroma(chunks)
+        print("Adatbázis frissítve, te kész is vagy, queen! 👑")
+        print("A RAG build sikeresen befejeződött!")
+    except Exception as e:
+        print(f"Hiba {e}")
 
 # 6. A FŐFOLYAMAT (Slay Pipeline)
 def main():
     print("Indul a RAG építés... 🎉")
 
-    # 1. Betöltjük a PDF-eket
-    documents = load_documents()
-    if not documents:
-        print("Girl, üres a mappa! Tegyél bele egy PDF-et! 💀")
-        return
-    print(f"{len(documents)} oldal beolvasva. ✨")
+    print("RAG rendszer indul... ✨")
 
-    # 2. Felszeleteljük
-    chunks = split_documents(documents)
-    print(f"{len(chunks)} szeletre vágva. 🍕")
-
-    # 3. Betoljuk az adatbázisba
-    add_chroma(chunks)
-    print("Adatbázis frissítve, te kész is vagy, queen! 👑")
-
+    query_text = input("Kérdés (vagy 'break' a kilépéshez): ")
 
     teszt_kerdesek = ["Hány nap a felmondási időm, ha 3 éve dolgozom a cégnél és a munkáltató mond fel nekem?",
                       "Kiadhatja-e a főnököm a szabadságomat a próbaidő alatt, vagy meg kell várnom a 3 hónapot?",

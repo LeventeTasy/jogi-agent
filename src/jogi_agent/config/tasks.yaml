@@ -1,17 +1,21 @@
-research_task:
+jogi_kutatasi_feladat:
   description: >
-    Conduct a thorough research about {topic}
-    Make sure you find any interesting and relevant information given
-    the current year is {current_year}.
+    Végezzen célzott kutatást a(z) {topic} témakörben a rendelkezésre álló jogi adatbázisok (Mt., Ptk., GDPR) alapján. 
+    Használja a keresőeszközt a legrelevánsabb törvényi szakaszok, paragrafusok és szabályozási pontok azonosításához. 
+    Kiemelten ügyeljen a források pontosságára és a normaszöveg hiteles visszaadására.
   expected_output: >
-    A list with 10 bullet points of the most relevant information about {topic}
-  agent: researcher
+    Egy strukturált jegyzék a feltárt jogszabályi helyekről, amely tartalmazza a pontos törvényi hivatkozásokat 
+    és a hozzájuk tartozó releváns szövegrészleteket.
+  agent: jogi_kutato_specialista
 
-reporting_task:
+jogi_tanacsadoi_feladat:
   description: >
-    Review the context you got and expand each topic into a full section for a report.
-    Make sure the report is detailed and contains any and all relevant information.
+    A kutatási szakaszban feltárt jogszabályi kontextus alapján készítsen egy professzionális és közérthető 
+    összefoglalót a felhasználó számára. Értelmezze a technikai jogi nyelvezetet, és válaszoljon a feltett 
+    kérdésre a talált források alapján. Ügyeljen a logikai felépítésre és arra, hogy minden állítást 
+    forráshivatkozással támasszon alá a szövegen belül.
   expected_output: >
-    A fully fledged report with the main topics, each with a full section of information.
-    Formatted as markdown without '```'
-  agent: reporting_analyst
+    Egy professzionális, Markdown formátumú jogi tájékoztató jelentés, amely tartalmazza a közvetlen választ, 
+    a részletes kifejtést a törvényi hivatkozásokkal, valamint egy rövid összefoglaló konklúziót. 
+    A formázás során ne használjon kódblokk (```) jelöléseket a teljes szövegre.
+  agent: jogi_megfelelosegi_elemzo
