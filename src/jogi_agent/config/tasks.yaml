@@ -6,6 +6,7 @@ jogi_kutatasi_feladat:
   expected_output: >
     Egy strukturált jegyzék a feltárt jogszabályi helyekről, amely tartalmazza a pontos törvényi hivatkozásokat 
     és a hozzájuk tartozó releváns szövegrészleteket.
+    JSON formatumú leírás
   agent: jogi_researcher
 
 jogi_tanacsadoi_feladat:

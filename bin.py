@@ -1,4 +1,5 @@
 import os
+import re
 from langchain_community.document_loaders import PyPDFDirectoryLoader
 from langchain_chroma import Chroma
 from langchain_core.prompts import ChatPromptTemplate
@@ -9,11 +10,9 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from dotenv import load_dotenv
 
 # 1. BEÁLLÍTÁSOK (Global Variables)
-DATA_PATH = "../pdf"  # Ide tedd a Munka Törvénykönyvét!
-CHROMA_PATH = "../chroma_db"  # Ennek a mappának a nevét muszáj megadni, ide menti az adatbázist!
+CHROMA_PATH = os.path.abspath(os.path.join(os.getcwd(), "chroma_db"))
+DATA_PATH = os.path.abspath(os.path.join(os.getcwd(), "pdf"))
 
-CHROMA_PATH = os.path.abspath(os.path.join(os.getcwd(), "../chroma_db"))
-DATA_PATH = os.path.abspath(os.path.join(os.getcwd(), "../pdf"))
 
 # 2. BEOLVASÁS
 def load_documents():
@@ -21,7 +20,7 @@ def load_documents():
     return document_loader.load()
 
 
-# 3. DARABOLÁS (Chunking)
+# 3. DARABOLÁS (A visszahozott Regex Mágia! 🪄✂️)
 def split_documents(documents: list[Document]):
     all_chunks = []
     # A te zseniális regexed, ami megtalálja a cikkeket és paragrafusokat!
@@ -79,12 +78,11 @@ def split_documents(documents: list[Document]):
 def get_embedding_function():
     load_dotenv()
     api_key = os.getenv("GOOGLE_API_KEY")
-    # Itt mondjuk meg neki, hogy a Google "szemüvegén" keresztül nézze a szöveget 👓
     embeddings = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001", api_key=api_key)
     return embeddings
 
 
-# 5. ADATBÁZIS FELÉPÍTÉSE (A rendrakás fázis)
+# 5. ADATBÁZIS FELÉPÍTÉSE
 def add_chroma(chunks: list[Document]):
     db = Chroma(
         persist_directory=CHROMA_PATH, embedding_function=get_embedding_function()
@@ -137,31 +135,14 @@ def query_rag(query_text: str):
 
     PROMPT_TEMPLATE = """
     Te egy jogi asszisztens vagy, aki KIZÁRÓLAG a megadott kontextus alapján válaszol.
-    
+
     KONTEXT:
     {context}
-    
-    ---
-    
-    SZABÁLYOK (kritikus):
-    - CSAK a fenti kontextusban szereplő információkat használhatod
-    - TILOS bármilyen információt kitalálni vagy feltételezni
-    - Csak olyan paragrafust / cikket hivatkozhatsz, ami konkrétan szerepel a kontextusban
-    - Ha nem egyértelmű a pontos cikk vagy paragrafus, MONDD KI hogy nem állapítható meg
-    - Különböztesd meg:
-      - jogszabályi cikkek / paragrafusok
-      - preambulum bekezdések (pl. (32))
-    - NE keverd ezeket össze
-    - Minden állítást támassz alá forrással
-    - Ha több különböző forrás ellentmond egymásnak, jelezd az ellentmondást
-    
-    FORMÁTUM:
-    - Adj egy rövid, pontos választ
-    - Utána: "Források:" rész
-    - Maximum 2-3 releváns hivatkozás
-    
-    ---
-    
+
+    SZABÁLYOK:
+    - CSAK a kontextusban szereplő információkat használd.
+    - TILOS információt kitalálni.
+
     KÉRDÉS:
     {question}
     """
@@ -172,7 +153,7 @@ def query_rag(query_text: str):
     prompt = prompt_template.format(context=context_text, question=query_text)
 
     llm = ChatGoogleGenerativeAI(
-        model="gemini-2.5-flash",
+        model="gemini-1.5-flash",
         temperature=0
     )
     response_text = llm.invoke(prompt)
@@ -180,81 +161,36 @@ def query_rag(query_text: str):
     # Itt most már az 'article' is kinyerhető a metaadatokból a CrewAI JSON-jéhez! ✨
     sources = [{"id": doc.metadata.get("id"), "article": doc.metadata.get("article")} for doc, _score in results]
 
-    """
-    print("\nVÁLASZ:")
-    print(response_text.content)  # .content kell, mert a válasz egy objektum!
-
-    print("\nFORRÁSOK:")
-    print(sources)
-    print("-" * 50)
-    """
-
     return f"VÁLASZ:\n {response_text.content} \nFORRÁSOK:\n {sources}"
 
-def build_rag():
-    print("Rag építése elkezdődött!")
-    documents = load_documents()
-    if not documents:
-        print("A mappa üres, töltse fel PDF-ekkel!")
-        return
-
-    print(f"{len(documents)} oldal beolvasva. ✨")
-
-    try:
-        chunks = split_documents(documents)
-        print(f"{len(chunks)} szeletre vágva. 🍕")
-        add_chroma(chunks)
-        print("Adatbázis frissítve, te kész is vagy, queen! 👑")
-        print("A RAG build sikeresen befejeződött!")
-    except Exception as e:
-        print(f"Hiba {e}")
 
 # 6. A FŐFOLYAMAT (Slay Pipeline)
 def main():
-    print(CHROMA_PATH)
-    print(DATA_PATH)
-    build_rag()
-
-
     print("RAG rendszer indul... ✨")
-
-    #query_text = input("Kérdés (vagy 'break' a kilépéshez): ")
-
-    teszt_kerdesek = ["Hány nap a felmondási időm, ha 3 éve dolgozom a cégnél és a munkáltató mond fel nekem?",
-                      "Kiadhatja-e a főnököm a szabadságomat a próbaidő alatt, vagy meg kell várnom a 3 hónapot?",
-                      "Elmehetek-e egy konkurens céghez dolgozni azonnal, ha aláírtam egy versenytilalmi megállapodást? Mennyit kell fizetniük érte?"]
 
     test_questions = [
         # --- SZJA Törvény ---
-        "Ki jogosult a 25 év alatti fiatalok kedvezményére és meddig vehető igénybe?",
-        "Milyen szabályok vonatkoznak a családi kedvezményre? Mekkora az összege egy eltartott esetén?",
+        # "Ki jogosult a 25 év alatti fiatalok kedvezményére és meddig vehető igénybe?",
+        # "Milyen szabályok vonatkoznak a családi kedvezményre? Mekkora az összege egy eltartott esetén?",
 
         # --- Polgári Törvénykönyv (Ptk.) ---
-        "Mik a szerződés érvénytelenségének általános esetei a Ptk. szerint?",
-        "Mi a különbség a kártérítés és a kártalanítás között a magyar magánjogban?",
-        "Hogyan jön létre egy érvényes adásvételi szerződés az új Ptk. alapján?",
+        # "Mik a szerződés érvénytelenségének általános esetei a Ptk. szerint?",
+        # "Mi a különbség a kártérítés és a kártalanítás között a magyar magánjogban?",
+        # "Hogyan jön létre egy érvényes adásvételi szerződés az új Ptk. alapján?",
 
         # --- GDPR (Adatvédelem) ---
         "Melyek az érintettek jogai a GDPR rendelet alapján? Sorolj fel legalább ötöt!",
         "Mit jelent az 'elfeledtetéshez való jog' (törléshez való jog) és mikor korlátozható?",
-        "Milyen feltételek mellett tekinthető az adatkezeléshez adott hozzájárulás érvényesnek?",
+        "Milyen feltételek mellett tekinthető az adatkezeléshez adott hozzájárulás érvényesnek?"
 
         # --- Cross-topic (Összetettebb) ---
-        "Hogyan kell kezelni a munkavállaló adatait a munkaviszony során a GDPR és az Mt. szerint?"
     ]
 
-    """
-    # Ezt csak dobd bele egy for ciklusba és mehet a query_rag()! 🚀
-    for question in test_questions:
-        print(f"\n🔍 TESZTELÉS: {question}")
-        query_rag(question)
-    """
+    # Csak teszteléshez ki is írhatod őket
+    for q in test_questions:
+        print(f"\n🔍 TESZTELÉS: {q}")
+        print(query_rag(q))
 
-    query_text = input(": ")
-
-    while query_text != "break":
-        print(query_rag(query_text))
-        query_text = input(": ")
 
 if __name__ == "__main__":
     main()
