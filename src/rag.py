@@ -13,9 +13,10 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 # =========================
 # 1. BEÁLLÍTÁSOK
 # =========================
-CHROMA_PATH = os.path.abspath(os.path.join(os.getcwd(), "../chroma_db"))
-DATA_PATH = os.path.abspath(os.path.join(os.getcwd(), "../pdf"))
-RETRIEVAL_K = 10
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+CHROMA_PATH = os.path.abspath(os.path.join(BASE_DIR, "../chroma_db"))
+DATA_PATH = os.path.abspath(os.path.join(BASE_DIR, "../pdf"))
+RETRIEVAL_K = 5
 
 
 # =========================
@@ -43,15 +44,12 @@ def detect_law_name(source_path: str) -> str:
 
 def detect_section_type(section_id: str) -> str:
     section_id = section_id.strip()
-
-    if re.fullmatch(r"\(\d+\)", section_id):
-        return "preambulum"
+    # A preambulumot csak akkor detektáljuk, ha tényleg az
     if "cikk" in section_id.lower():
         return "cikk"
     if "§" in section_id:
         return "paragrafus"
-
-    return "ismeretlen"
+    return "egyéb"
 
 
 def clean_id_text(text: str) -> str:
@@ -82,7 +80,7 @@ def split_documents(documents: list[Document]):
 
     # Egyetlen regex, de a találatokat jogi egységként kezeljük
     section_pattern = re.compile(
-        r'(?m)^\s*((?:\d+:\d+|\d+)\.\s*§|\d+\.\s*§|\d+\.\s*[Cc]ikk|\(\d+\))\s*'
+        r'(?m)^\s*((?:\d+:\d+|\d+)\.\s*§|\d+\.\s*§|\d+\.\s*[Cc]ikk)\s*'
     )
 
     for source, pages in docs_by_source.items():
@@ -216,10 +214,11 @@ def query_rag(query_text: str):
         embedding_function=get_embedding_function()
     )
 
+    allowed_types = ["cikk", "paragrafus"]
     results = db.similarity_search_with_score(
         query_text,
         k=RETRIEVAL_K,
-        filter={"section_type": {"$in": ["cikk", "paragrafus"]}}
+        filter={"section_type": {"$in": allowed_types}}
     )
 
     formatted_context = ""
@@ -266,6 +265,9 @@ def query_rag(query_text: str):
     - Ha a válasz logikailag következik a kontextusból, vond le a következtetést, de jelezd, ha a pontos jogszabályi hely hiányos.
     - Ha egy cikk vagy paragrafus nem szerepel szó szerint a kontextusban: TILOS megemlíteni.
     - Ha a több darabban látod ugyanazt a cikkelyt (pl. két "88. cikk" nevű chunk), akkor próbáld meg őket fejben összerakni
+    - Ha a pontos joghely nem szerepel szó szerint a kontextusban, ne nevezd meg.
+    - Ha bizonytalan vagy, mondd azt, hogy a kontextusból nem állapítható meg biztosan.
+    - Ne használj más törvényből származó joghelyet, ha a kérdés nem erre kérdez rá.
 
     KONTEXTUS:
     {context}
@@ -292,7 +294,16 @@ def query_rag(query_text: str):
 
     print("\nFORRÁSOK (JSON-ready az Agentnek):")
     import json
-    print(json.dumps(source_list, indent=2, ensure_ascii=False))
+
+    seen = set()
+    dedup_sources = []
+    for item in source_list:
+        key = (item["source"], item["section_id"])
+        if key not in seen:
+            seen.add(key)
+            dedup_sources.append(item)
+    print(json.dumps(dedup_sources, indent=2, ensure_ascii=False))
+
     print("=" * 50)
 
     return response_text.content
@@ -319,7 +330,7 @@ def build_rag():
 def main():
     print("Indul a RAG építés... 🎉")
 
-    #build_rag()
+    build_rag()
 
     test_questions = [
         # --- GDPR jogok (csapda: túl általános + összekeverhető cikkek) ---
@@ -346,7 +357,7 @@ def main():
 
     for question in test_questions:
         print(f"\n🔍 TESZTELÉS: {question}")
-        #query_rag(question)
+        query_rag(question)
 
     query_text = input(": ")
     while query_text != "break":
