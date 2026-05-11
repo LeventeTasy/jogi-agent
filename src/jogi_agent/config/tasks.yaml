@@ -6,7 +6,7 @@ jogi_kutatasi_feladat:
   expected_output: >
     Egy strukturált jegyzék a feltárt jogszabályi helyekről, amely tartalmazza a pontos törvényi hivatkozásokat 
     és a hozzájuk tartozó releváns szövegrészleteket.
-  agent: jogi_kutato_specialista
+  agent: jogi_researcher
 
 jogi_tanacsadoi_feladat:
   description: >
@@ -18,4 +18,4 @@ jogi_tanacsadoi_feladat:
     Egy professzionális, Markdown formátumú jogi tájékoztató jelentés, amely tartalmazza a közvetlen választ, 
     a részletes kifejtést a törvényi hivatkozásokkal, valamint egy rövid összefoglaló konklúziót. 
     A formázás során ne használjon kódblokk (```) jelöléseket a teljes szövegre.
-  agent: jogi_megfelelosegi_elemzo
+  agent: jogi_analyst
