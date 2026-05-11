@@ -1,245 +1,358 @@
 import os
+import re
+import time
+from dotenv import load_dotenv
+
 from langchain_community.document_loaders import PyPDFDirectoryLoader
 from langchain_chroma import Chroma
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
-from langchain_google_genai import GoogleGenerativeAIEmbeddings  # The Slay swap! 💅
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_google_genai import ChatGoogleGenerativeAI
-from dotenv import load_dotenv
-import re
 
-# 1. BEÁLLÍTÁSOK (Global Variables)
-DATA_PATH = "../pdf"  # Ide tedd a Munka Törvénykönyvét!
-CHROMA_PATH = "../chroma_db"  # Ennek a mappának a nevét muszáj megadni, ide menti az adatbázist!
-
+# =========================
+# 1. BEÁLLÍTÁSOK
+# =========================
 CHROMA_PATH = os.path.abspath(os.path.join(os.getcwd(), "../chroma_db"))
 DATA_PATH = os.path.abspath(os.path.join(os.getcwd(), "../pdf"))
+RETRIEVAL_K = 10
 
-# 2. BEOLVASÁS
+
+# =========================
+# 2. SEGÉD FUNKCIÓK
+# =========================
 def load_documents():
     document_loader = PyPDFDirectoryLoader(DATA_PATH)
     return document_loader.load()
 
 
-# 3. DARABOLÁS (Chunking)
-def split_documents(documents: list[Document]):
-    all_chunks = []
-    # A te zseniális regexed
-    para_pattern = r'(\d+\.\s§|\d+\.\s?[Cc]ikk|\(\d+\))'
+def detect_law_name(source_path: str) -> str:
+    filename = os.path.basename(source_path).replace(".pdf", "")
 
-    text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=400,
-        chunk_overlap=40,
-        length_function=len,
-        is_separator_regex=False
+    if filename == "1995_CXVII_SZJA_TVK":
+        return "SZJA törvény"
+    if filename == "2013_V_PTK":
+        return "Polgári Törvénykönyv (Ptk.)"
+    if filename == "edutax_mt2026_web":
+        return "Munka Törvénykönyve (Mt.)"
+    if filename == "GDPR_2016":
+        return "GDPR rendelet"
+
+    return filename
+
+
+def detect_section_type(section_id: str) -> str:
+    section_id = section_id.strip()
+
+    if re.fullmatch(r"\(\d+\)", section_id):
+        return "preambulum"
+    if "cikk" in section_id.lower():
+        return "cikk"
+    if "§" in section_id:
+        return "paragrafus"
+
+    return "ismeretlen"
+
+
+def clean_id_text(text: str) -> str:
+    return (
+        text.replace(" ", "")
+        .replace(".", "")
+        .replace("(", "")
+        .replace(")", "")
+        .replace("§", "§")
     )
 
-    current_article = "Általános"  # Ez "emlékszik" a cikkre oldalakon át is ✨
 
+# =========================
+# 3. DARABOLÁS
+# =========================
+def split_documents(documents: list[Document]):
+    """
+    Egy chunk = egy jogi egység.
+    GDPR: cikk / preambulum
+    Ptk., Mt., SZJA: § vagy cikk
+    """
+    all_chunks = []
+
+    docs_by_source = {}
     for doc in documents:
-        full_text = doc.page_content
-        source = doc.metadata.get("source", "ismeretlen")
-        page = doc.metadata.get("page", "?")  # Itt rántjuk vissza az oldalszámot! 📄✨
+        source = doc.metadata.get("source", "unknown")
+        docs_by_source.setdefault(source, []).append(doc)
 
-        # Szétszedjük az adott oldal szövegét
-        parts = re.split(para_pattern, full_text)
+    # Egyetlen regex, de a találatokat jogi egységként kezeljük
+    section_pattern = re.compile(
+        r'(?m)^\s*((?:\d+:\d+|\d+)\.\s*§|\d+\.\s*§|\d+\.\s*[Cc]ikk|\(\d+\))\s*'
+    )
 
-        for part in parts:
-            part = part.strip()
-            if not part:
+    for source, pages in docs_by_source.items():
+        pages.sort(key=lambda x: x.metadata.get("page", 0))
+        full_text = "\n".join([p.page_content for p in pages])
+
+        matches = list(section_pattern.finditer(full_text))
+
+        # Ha nincs struktúra a szövegben, akkor egyben mentjük
+        if not matches:
+            law_name = detect_law_name(source)
+            all_chunks.append(
+                Document(
+                    page_content=full_text.strip(),
+                    metadata={
+                        "source": source,
+                        "law": law_name,
+                        "section_type": "ismeretlen",
+                        "section_id": "ismeretlen",
+                        "page": "multiple",
+                    },
+                )
+            )
+            continue
+
+        for i, match in enumerate(matches):
+            section_id = match.group(1).strip()
+            start = match.end()
+            end = matches[i + 1].start() if i + 1 < len(matches) else len(full_text)
+            body = full_text[start:end].strip()
+
+            if not body:
                 continue
 
-            if re.match(para_pattern, part):
-                current_article = part  # Frissítjük a cikk számát, ha találtunk újat
-            else:
-                sub_chunks = text_splitter.split_text(part)
-                for chunk_text in sub_chunks:
-                    # Itt jön a metaadat-glow up! 💖
-                    new_doc = Document(
-                        page_content=f"[{current_article}] {chunk_text}",
-                        metadata={
-                            "source": source,
-                            "article": current_article,
-                            "page": page + 1,  # A PDF-ben 0-tól indul, mi 1-től mutatjuk (user-friendly!)
-                            "id": f"{os.path.basename(source)}:p{page + 1}:{current_article}"  # Ütős egyedi ID
-                        }
-                    )
-                    all_chunks.append(new_doc)
+            section_type = detect_section_type(section_id)
+            law_name = detect_law_name(source)
+
+            chunk = Document(
+                page_content=f"{section_id}\n{body}",
+                metadata={
+                    "source": source,
+                    "law": law_name,
+                    "section_type": section_type,
+                    "section_id": section_id,
+                    "page": "multiple",
+                },
+            )
+            all_chunks.append(chunk)
 
     return all_chunks
 
 
-# 4. AZ "AGY" (Embeddings)
+# =========================
+# 4. EMBEDDING
+# =========================
 def get_embedding_function():
     load_dotenv()
     api_key = os.getenv("GOOGLE_API_KEY")
-    # Itt mondjuk meg neki, hogy a Google "szemüvegén" keresztül nézze a szöveget 👓
-    embeddings = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001", api_key=api_key)
-    return embeddings
-
-
-# 5. ADATBÁZIS FELÉPÍTÉSE (A rendrakás fázis)
-def add_chroma(chunks: list[Document]):
-    db = Chroma(
-        persist_directory=CHROMA_PATH, embedding_function=get_embedding_function()
+    return GoogleGenerativeAIEmbeddings(
+        model="models/gemini-embedding-001",
+        api_key=api_key
     )
 
-    # 1. Lekérjük a már bent lévő ID-kat
+
+# =========================
+# 5. CHROMA FELÉPÍTÉS
+# =========================
+def add_chroma(chunks: list[Document]):
+    db = Chroma(
+        persist_directory=CHROMA_PATH,
+        embedding_function=get_embedding_function()
+    )
+
     existing_items = db.get(include=[])
     existing_ids = set(existing_items["ids"])
     print(f"Jelenlegi dokumentumok száma a DB-ben: {len(existing_ids)} 📚")
 
-    # 2. Csak azokat a chunkokat tartjuk meg, amiknek az ID-ja még nincs bent
     new_chunks = []
-    new_chunk_ids = []
 
-    for chunk in chunks:
-        # A split_documents-ben már beállítottuk a chunk.metadata["id"]-t! ✨
-        chunk_id = chunk.metadata.get("id")
+    for idx, chunk in enumerate(chunks):
+        source = chunk.metadata.get("source", "ismeretlen")
+        law = chunk.metadata.get("law", "ismeretlen_törvény")
+        section_type = chunk.metadata.get("section_type", "ismeretlen")
+        section_id = chunk.metadata.get("section_id", "ismeretlen")
+
+        clean_source = os.path.basename(source).replace(".pdf", "")
+        clean_law = clean_id_text(law)
+        clean_section_id = clean_id_text(section_id)
+
+        chunk_id = f"{clean_source}:{clean_law}:{section_type}:{clean_section_id}:{idx}"
+        chunk.metadata["id"] = chunk_id
 
         if chunk_id not in existing_ids:
             new_chunks.append(chunk)
-            new_chunk_ids.append(chunk_id)
 
-    # 3. Ha van új "doksi", betoljuk batch-elve 🍕
-    if len(new_chunks) > 0:
-        print(f"Új dokumentumok hozzáadása: {len(new_chunks)} db ✨")
+    if len(new_chunks) == 0:
+        print("Minden friss, nincs mit tölteni! 💅")
+        return
 
-        batch_size = 100
-        for i in range(0, len(new_chunks), batch_size):
-            batch = new_chunks[i: i + batch_size]
-            batch_ids = new_chunk_ids[i: i + batch_size]
-            db.add_documents(batch, ids=batch_ids)
-            print(f"Batch elküldve: {i + len(batch)}/{len(new_chunks)} ✅")
-    else:
-        print("Nincs új dokumentum, everything is up to date! 💅")
+    print(f"Új dokumentumok hozzáadása: {len(new_chunks)} db ✨")
 
+    batch_size = 100
+    for i in range(0, len(new_chunks), batch_size):
+        batch = new_chunks[i:i + batch_size]
+        batch_ids = [chunk.metadata["id"] for chunk in batch]
+
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                db.add_documents(batch, ids=batch_ids)
+                print(f"Adag elküldve: {min(i + batch_size, len(new_chunks))}/{len(new_chunks)}... ✅")
+                break
+            except Exception as e:
+                if attempt < max_retries - 1:
+                    wait_time = 10 * (attempt + 1)
+                    print(f"Hiba történt (attempt {attempt + 1})... újrapróbálom {wait_time} mp múlva...")
+                    time.sleep(wait_time)
+                else:
+                    print(f"Végzetes hiba: {e}")
+                    raise
+
+        time.sleep(2)
+
+
+# =========================
+# 6. KÉRDEZÉS
+# =========================
 def query_rag(query_text: str):
     db = Chroma(
-        persist_directory=CHROMA_PATH, embedding_function=get_embedding_function()
+        persist_directory=CHROMA_PATH,
+        embedding_function=get_embedding_function()
     )
 
+    results = db.similarity_search_with_score(
+        query_text,
+        k=RETRIEVAL_K,
+        filter={"section_type": {"$in": ["cikk", "paragrafus"]}}
+    )
+
+    formatted_context = ""
+    source_list = []
+
+    for doc, score in results:
+        # 1. Kinyerjük a JELENLEGI adatbázisod metaadatait
+        meta = doc.metadata
+        source_file = os.path.basename(meta.get("source", "Ismeretlen")).replace(".pdf", "")
+        law = meta.get("law", "Ismeretlen törvény")
+        section_id = meta.get("section_id", "ismeretlen")
+        page = meta.get("page", "multiple")
+
+        # Matematikai magabiztosság (0 és 1 között, a távolságból számolva) 🧠✨
+        confidence = round(1 - min(score, 1.0), 2)
+
+        # 2. Megépítjük a fejlécet, ahogy kérted
+        header = f"[Törvény: {law} | Hely: {section_id} | Oldal: {page} | Forrásfájl: {source_file} | Bizonyosság: {confidence}]"
+
+        # 3. Hozzáadjuk a formázott kontextushoz
+        formatted_context += f"{header}\n{doc.page_content}\n\n---\n\n"
+
+        # 4. JSON-ready lista építése az ágensnek
+        source_list.append({
+            "source": source_file,
+            "law": law,
+            "section_id": section_id,
+            "page": page,
+            "confidence": confidence
+        })
+
+    # ==========================================
+    # HA A CREWAI TOOL-BA RAKOD ÁT A KÓDOT, AKKOR CSAK ENNYI KELL:
+    # return formatted_context
+    # ==========================================
+
+    # Mivel most még a main()-ben teszteljük, lefuttatjuk az LLM-et is:
     PROMPT_TEMPLATE = """
-    Te egy jogi asszisztens vagy, aki KIZÁRÓLAG a megadott kontextus alapján válaszol.
-    
-    KONTEXT:
+    Te egy tűpontos jogi asszisztens vagy. KIZÁRÓLAG a megadott kontextus alapján válaszolj.
+
+    SZABÁLYOK:
+    - Csak a kontextusban szereplő információkat használd.
+    - Tilos bármit kitalálni vagy feltételezni.
+    - Ha a válasz logikailag következik a kontextusból, vond le a következtetést, de jelezd, ha a pontos jogszabályi hely hiányos.
+    - Ha egy cikk vagy paragrafus nem szerepel szó szerint a kontextusban: TILOS megemlíteni.
+    - Ha a több darabban látod ugyanazt a cikkelyt (pl. két "88. cikk" nevű chunk), akkor próbáld meg őket fejben összerakni
+
+    KONTEXTUS:
     {context}
-    
-    ---
-    
-    SZABÁLYOK (kritikus):
-    - CSAK a fenti kontextusban szereplő információkat használhatod
-    - TILOS bármilyen információt kitalálni vagy feltételezni
-    - Csak olyan paragrafust / cikket hivatkozhatsz, ami konkrétan szerepel a kontextusban
-    - Ha nem egyértelmű a pontos cikk vagy paragrafus, MONDD KI hogy nem állapítható meg
-    - Különböztesd meg:
-      - jogszabályi cikkek / paragrafusok
-      - preambulum bekezdések (pl. (32))
-    - NE keverd ezeket össze
-    - Minden állítást támassz alá forrással
-    - Ha több különböző forrás ellentmond egymásnak, jelezd az ellentmondást
-    
-    FORMÁTUM:
-    - Adj egy rövid, pontos választ
-    - Utána: "Források:" rész
-    - Maximum 2-3 releváns hivatkozás
-    
-    ---
-    
+
     KÉRDÉS:
     {question}
     """
 
-    results = db.similarity_search_with_score(query_text, k=3)
-    context_text = "\n\n--\n\n".join(doc.page_content for doc, _score in results)
     prompt_template = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
-    prompt = prompt_template.format(context=context_text, question=query_text)
+    # Beletoljuk az új, szuper-strukturált kontextusunkat! 💅
+    prompt = prompt_template.format(context=formatted_context, question=query_text)
 
     llm = ChatGoogleGenerativeAI(
         model="gemini-2.5-flash",
         temperature=0
     )
+
     response_text = llm.invoke(prompt)
 
-    # Itt most már az 'article' is kinyerhető a metaadatokból a CrewAI JSON-jéhez! ✨
-    sources = [{"id": doc.metadata.get("id"), "article": doc.metadata.get("article")} for doc, _score in results]
+    # Visszaadjuk a választ ÉS az új JSON-ready forrásokat!
+    print("\n" + "=" * 50)
+    print("VÁLASZ:")
+    print(response_text.content)
 
-    """
-    print("\nVÁLASZ:")
-    print(response_text.content)  # .content kell, mert a válasz egy objektum!
+    print("\nFORRÁSOK (JSON-ready az Agentnek):")
+    import json
+    print(json.dumps(source_list, indent=2, ensure_ascii=False))
+    print("=" * 50)
 
-    print("\nFORRÁSOK:")
-    print(sources)
-    print("-" * 50)
-    """
+    return response_text.content
 
-    return f"VÁLASZ:\n {response_text.content} \nFORRÁSOK:\n {sources}"
 
 def build_rag():
     print("Rag építése elkezdődött!")
     documents = load_documents()
     if not documents:
-        print("A mappa üres, töltse fel PDF-ekkel!")
+        print("Üres a mappa! Tegyél bele egy PDF-et!")
         return
 
     print(f"{len(documents)} oldal beolvasva. ✨")
 
-    try:
-        chunks = split_documents(documents)
-        print(f"{len(chunks)} szeletre vágva. 🍕")
-        add_chroma(chunks)
-        print("Adatbázis frissítve, te kész is vagy, queen! 👑")
-        print("A RAG build sikeresen befejeződött!")
-    except Exception as e:
-        print(f"Hiba {e}")
+    chunks = split_documents(documents)
+    print(f"{len(chunks)} szeletre vágva.")
 
-# 6. A FŐFOLYAMAT (Slay Pipeline)
+    add_chroma(chunks)
+    print("Adatbázis frissítve, te kész is vagy, queen!")
+
+# =========================
+# 7. FŐFOLYAMAT
+# =========================
 def main():
-    print(CHROMA_PATH)
-    print(DATA_PATH)
-    build_rag()
+    print("Indul a RAG építés... 🎉")
 
-
-    print("RAG rendszer indul... ✨")
-
-    #query_text = input("Kérdés (vagy 'break' a kilépéshez): ")
-
-    teszt_kerdesek = ["Hány nap a felmondási időm, ha 3 éve dolgozom a cégnél és a munkáltató mond fel nekem?",
-                      "Kiadhatja-e a főnököm a szabadságomat a próbaidő alatt, vagy meg kell várnom a 3 hónapot?",
-                      "Elmehetek-e egy konkurens céghez dolgozni azonnal, ha aláírtam egy versenytilalmi megállapodást? Mennyit kell fizetniük érte?"]
+    #build_rag()
 
     test_questions = [
-        # --- SZJA Törvény ---
-        "Ki jogosult a 25 év alatti fiatalok kedvezményére és meddig vehető igénybe?",
-        "Milyen szabályok vonatkoznak a családi kedvezményre? Mekkora az összege egy eltartott esetén?",
+        # --- GDPR jogok (csapda: túl általános + összekeverhető cikkek) ---
+        "Felsorolható-e a GDPR alapján az 'információhoz való jog' mint önálló érintetti jog, és melyik cikk szabályozza pontosan?",
+        "Az adathordozhatósághoz való jog minden adatkezelési jogalap esetén érvényesül?",
+        "A GDPR szerint a hozzájárulás visszavonása érinti-e a korábbi adatkezelés jogszerűségét?",
 
-        # --- Polgári Törvénykönyv (Ptk.) ---
-        "Mik a szerződés érvénytelenségének általános esetei a Ptk. szerint?",
-        "Mi a különbség a kártérítés és a kártalanítás között a magyar magánjogban?",
-        "Hogyan jön létre egy érvényes adásvételi szerződés az új Ptk. alapján?",
+        # --- elfeledtetés (csapda: túl széles / kivételek / jogalap keverés) ---
+        "Az elfeledtetéshez való jog automatikusan alkalmazandó minden adatkezelés esetén?",
+        "Ha egy adatot közérdekből kezelnek, akkor kérhető-e annak törlése a GDPR szerint?",
+        "A törléshez való jog és az adatkezelés korlátozása ugyanazt jelenti-e a GDPR-ban?",
 
-        # --- GDPR (Adatvédelem) ---
-        "Melyek az érintettek jogai a GDPR rendelet alapján? Sorolj fel legalább ötöt!",
-        "Mit jelent az 'elfeledtetéshez való jog' (törléshez való jog) és mikor korlátozható?",
-        "Milyen feltételek mellett tekinthető az adatkezeléshez adott hozzájárulás érvényesnek?",
+        # --- hozzájárulás (csapda: definíció vs feltételek keverése) ---
+        "Elég-e a GDPR szerint az, ha a felhasználó nem tiltakozik az adatkezelés ellen, hogy az hozzájárulásnak minősüljön?",
+        "A GDPR szerint mindig érvénytelen a hozzájárulás, ha szolgáltatás igénybevételéhez kötik?",
+        "Egy előre kipipált checkbox elfogadható hozzájárulásnak minősülhet valaha a GDPR szerint?",
 
-        # --- Cross-topic (Összetettebb) ---
-        "Hogyan kell kezelni a munkavállaló adatait a munkaviszony során a GDPR és az Mt. szerint?"
+        # --- Mt + GDPR keverés (csapda: rossz jogalap / túl specifikus állítások) ---
+        "A munkáltató a GDPR alapján bármilyen személyes adatot kérhet a munkavállalótól, ha az a munkavégzéshez kapcsolódik?",
+        "A biometrikus adatok kezelése a Munka Törvénykönyve szerint mindig megengedett a beléptető rendszerekhez?",
+        "A munkavállaló hozzájárulása elegendő jogalap-e minden munkaviszonnyal kapcsolatos adatkezeléshez?",
+        "A GDPR 88. cikk teljes mértékben felülírja a magyar Munka Törvénykönyv adatkezelési szabályait?"
     ]
 
-    """
-    # Ezt csak dobd bele egy for ciklusba és mehet a query_rag()! 🚀
     for question in test_questions:
         print(f"\n🔍 TESZTELÉS: {question}")
-        query_rag(question)
-    """
+        #query_rag(question)
 
     query_text = input(": ")
-
     while query_text != "break":
-        print(query_rag(query_text))
+        query_rag(query_text)
         query_text = input(": ")
+
 
 if __name__ == "__main__":
     main()

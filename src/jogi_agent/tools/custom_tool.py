@@ -31,17 +31,38 @@ class MyCustomTool(BaseTool):
         print("--- RAG Adatbázis sikeresen betöltve a memóriába! ---")
 
     def _run(self, query: str) -> str:
-        results = self._db.similarity_search(query, k=4)
+        results = db.similarity_search_with_score(
+            query_text,
+            k=6,
+            filter={"section_type": {"$in": ["cikk", "paragrafus"]}}
+        )
 
         formatted_context = ""
         for doc in results:
-            sources = [{"id": doc.metadata.get("id"), "article": doc.metadata.get("article")} for doc, _score in results]
 
-            splitted = name.split(":")
-            source = splitted[0]
-            page = splitted[1][1:]
-            article = splitted[2]
+            sources = [
+                {
+                    "source": os.path.basename(doc.metadata.get("source", "ismeretlen")),
+                    "law": doc.metadata.get("law", "N/A"),
+                    "section_type": doc.metadata.get("section_type", "N/A"),
+                    "section_id": doc.metadata.get("section_id", "N/A"),
+                    "page": doc.metadata.get("page", "N/A")
+                }
+                for doc, _score in results
+            ]
 
-            formatted_context += f"[Source: {source}, Page: {page} Article: {sources["article"]}]: {doc.page_content}\n\n"
+            formatted_context = ""
+            for i, (doc, _score) in enumerate(results):
+                # Kinyerjük a metaadatokat az adott dokumentumból
+                meta = doc.metadata
+                law = meta.get("law", "Ismeretlen törvény")
+                sid = meta.get("section_id", "N/A")
+                page = meta.get("page", "multiple")
+                src = os.path.basename(meta.get("source", "file"))
+                conf = round(1 - min(score, 1.0), 2)
+
+                header = f"[Törvény: {law} | Hely: {sid} | Confidence: {conf} | Oldal: {page} | Forrásfájl: {src}]"
+
+                formatted_context += f"{header}\n{doc.page_content}\n\n---\n\n"
 
         return formatted_contex

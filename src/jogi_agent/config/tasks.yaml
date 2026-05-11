@@ -1,12 +1,21 @@
 jogi_kutatasi_feladat:
   description: >
-    Végezzen célzott kutatást a(z) {topic} témakörben a rendelkezésre álló jogi adatbázisok (Mt., Ptk., GDPR) alapján. 
-    Használja a keresőeszközt a legrelevánsabb törvényi szakaszok, paragrafusok és szabályozási pontok azonosításához. 
-    Kiemelten ügyeljen a források pontosságára és a normaszöveg hiteles visszaadására.
+    Végezzen célzott kutatást a(z) {topic} témakörben a RAG keresőeszköz használatával. 
+    Gyűjtse ki a legrelevánsabb jogszabályi helyeket. A kinyert adatokat szigorúan 
+    a megadott JSON formátumban kell visszaadnia.
   expected_output: >
-    Egy strukturált jegyzék a feltárt jogszabályi helyekről, amely tartalmazza a pontos törvényi hivatkozásokat 
-    és a hozzájuk tartozó releváns szövegrészleteket.
-    JSON formatumú leírás
+    Egy JSON lista, amely tartalmazza a megtalált jogszabályi hivatkozásokat. 
+    Minden objektumnak az alábbi mezőket kell tartalmaznia:
+    {
+      "source": "A forrásfájl neve (pl. GDPR_hun.pdf)",
+      "law": "A törvény pontos megnevezése (pl. Munka Törvénykönyve)",
+      "page": "Az oldalszám, ahol az információ található",
+      "article": "A szakasz vagy cikk azonosítója (pl. 7. § vagy 4. cikk)",
+      "quote": "A vonatkozó jogszabályi részlet pontos idézete",
+      "topic": "Egy rövid kulcsszó, ami leírja az adott szakasz lényegét",
+      "confidence": "Egy 0 és 1 közötti szám, ami a találat relevanciáját jelzi"
+    }
+    Fontos: Csak érvényes JSON formátumot fogadok el, magyarázó szöveg nélkül!
   agent: jogi_researcher
 
 jogi_tanacsadoi_feladat:
