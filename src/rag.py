@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 DATA_PATH = "../pdf"  # Ide tedd a Munka Törvénykönyvét!
 CHROMA_PATH = "../chroma_db"  # Ennek a mappának a nevét muszáj megadni, ide menti az adatbázist!
 
-CHROMA_PATH = os.path.abspath(os.path.join(os.getcwd(), "chroma_db"))
+CHROMA_PATH = os.path.abspath(os.path.join(os.getcwd(), "../chroma_db"))
 DATA_PATH = os.path.abspath(os.path.join(os.getcwd(), "pdf"))
 
 # 2. BEOLVASÁS
@@ -175,7 +175,7 @@ def main():
 
     print("RAG rendszer indul... ✨")
 
-    query_text = input("Kérdés (vagy 'break' a kilépéshez): ")
+    #query_text = input("Kérdés (vagy 'break' a kilépéshez): ")
 
     teszt_kerdesek = ["Hány nap a felmondási időm, ha 3 éve dolgozom a cégnél és a munkáltató mond fel nekem?",
                       "Kiadhatja-e a főnököm a szabadságomat a próbaidő alatt, vagy meg kell várnom a 3 hónapot?",
@@ -206,7 +206,7 @@ def main():
         print(f"\n🔍 TESZTELÉS: {question}")
         query_rag(question)
     """
-
+    print(CHROMA_PATH)
     query_text = input(": ")
 
     while query_text != "break":

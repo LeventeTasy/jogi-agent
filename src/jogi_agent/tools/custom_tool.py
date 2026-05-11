@@ -21,7 +21,7 @@ class MyCustomTool(BaseTool):
         super().__init__(**kwargs)
         build_rag()
 
-        db_path = os.path.abspath(os.path.join(os.getcwd(), "chroma_db"))
+        db_path = os.path.abspath(os.path.join(os.getcwd(), "..\chroma_db"))
         embeddings = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001")
 
         self._db = Chroma(
