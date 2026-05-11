@@ -35,8 +35,13 @@ class MyCustomTool(BaseTool):
 
         formatted_context = ""
         for doc in results:
-            law = doc.metadata.get('law', 'Ismeretlen')
-            section = doc.metadata.get('section_id', 'Ismeretlen')
-            formatted_context += f"[{law} - {section}]: {doc.page_content}\n\n"
+            sources = [{"id": doc.metadata.get("id"), "article": doc.metadata.get("article")} for doc, _score in results]
+
+            splitted = name.split(":")
+            source = splitted[0]
+            page = splitted[1][1:]
+            article = splitted[2]
+
+            formatted_context += f"[Source: {source}, Page: {page} Article: {sources["article"]}]: {doc.page_content}\n\n"
 
         return formatted_contex
