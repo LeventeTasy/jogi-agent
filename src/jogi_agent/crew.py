@@ -19,16 +19,16 @@ class JogiAgent():
     # If you would like to add tools to your agents, you can learn more about it here:
     # https://docs.crewai.com/concepts/agents#agent-tools
     @agent
-    def researcher(self) -> Agent:
+    def jogi_researcher(self) -> Agent:
         return Agent(
-            config=self.agents_config['researcher'], # type: ignore[index]
+            config=self.agents_config['jogi_researcher'], # type: ignore[index]
             verbose=True
         )
 
     @agent
-    def reporting_analyst(self) -> Agent:
+    def jogi_analyst(self) -> Agent:
         return Agent(
-            config=self.agents_config['reporting_analyst'], # type: ignore[index]
+            config=self.agents_config['jogi_analyst'], # type: ignore[index]
             verbose=True
         )
 
@@ -36,15 +36,15 @@ class JogiAgent():
     # task dependencies, and task callbacks, check out the documentation:
     # https://docs.crewai.com/concepts/tasks#overview-of-a-task
     @task
-    def research_task(self) -> Task:
+    def jogi_kutatasi_feladat(self) -> Task:
         return Task(
-            config=self.tasks_config['research_task'], # type: ignore[index]
+            config=self.tasks_config['jogi_kutatasi_feladat'], # type: ignore[index]
         )
 
     @task
-    def reporting_task(self) -> Task:
+    def jogi_tanacsadoi_feladat(self) -> Task:
         return Task(
-            config=self.tasks_config['reporting_task'], # type: ignore[index]
+            config=self.tasks_config['jogi_tanacsadoi_feladat'], # type: ignore[index]
             output_file='report.md'
         )
 

@@ -17,9 +17,10 @@ def run():
     """
     Run the crew.
     """
+    question = input(": ")
+
     inputs = {
-        'topic': 'AI LLMs',
-        'current_year': str(datetime.now().year)
+        'topic': question,
     }
 
     try:
@@ -32,9 +33,10 @@ def train():
     """
     Train the crew for a given number of iterations.
     """
+    question = input(": ")
+
     inputs = {
-        "topic": "AI LLMs",
-        'current_year': str(datetime.now().year)
+        'topic': question,
     }
     try:
         JogiAgent().crew().train(n_iterations=int(sys.argv[1]), filename=sys.argv[2], inputs=inputs)
@@ -56,9 +58,10 @@ def test():
     """
     Test the crew execution and returns the results.
     """
+    question = input(": ")
+
     inputs = {
-        "topic": "AI LLMs",
-        "current_year": str(datetime.now().year)
+        'topic': question,
     }
 
     try:

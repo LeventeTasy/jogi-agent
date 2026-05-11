@@ -2,7 +2,7 @@ from crewai.tools import BaseTool
 from typing import Type
 from pydantic import BaseModel, Field
 from crewai.tools import tool
-from rag import rag_tool
+from rag import build_rag
 
 class JogiKeresoInput(BaseModel):
     """Input schema for JogiKeresoInput."""
@@ -19,7 +19,9 @@ class MyCustomTool(BaseTool):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        db_path = os.path.abspath(os.path.join(os.getcwd(), "chroma_db"))
+        build_rag()
+
+        db_path = os.path.abspath(os.path.join(os.getcwd(), "..\chroma_db"))
         embeddings = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001")
 
         self._db = Chroma(
