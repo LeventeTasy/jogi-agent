@@ -24,7 +24,7 @@ def load_documents():
 # 3. DARABOLÁS (Chunking)
 def split_documents(documents: list[Document]):
     text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=800,
+        chunk_size=800, # 800 volt
         chunk_overlap=80,
         length_function=len,
         is_separator_regex=False

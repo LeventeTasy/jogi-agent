@@ -22,14 +22,16 @@ class JogiAgent():
     def jogi_researcher(self) -> Agent:
         return Agent(
             config=self.agents_config['jogi_researcher'], # type: ignore[index]
-            verbose=True
+            verbose=False,
+            temperature=0.1
         )
 
     @agent
     def jogi_analyst(self) -> Agent:
         return Agent(
             config=self.agents_config['jogi_analyst'], # type: ignore[index]
-            verbose=True
+            verbose=False,
+            temperature = 0.1
         )
 
     # To learn more about structured task outputs,

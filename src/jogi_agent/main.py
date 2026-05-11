@@ -21,10 +21,12 @@ def run():
 
     inputs = {
         'topic': question,
+        'current_year': datetime.now().year
     }
 
     try:
-        JogiAgent().crew().kickoff(inputs=inputs)
+        result = JogiAgent().crew().kickoff(inputs=inputs)
+        print(result.raw)
     except Exception as e:
         raise Exception(f"An error occurred while running the crew: {e}")
 
@@ -37,6 +39,7 @@ def train():
 
     inputs = {
         'topic': question,
+        'current_year': datetime.now().year
     }
     try:
         JogiAgent().crew().train(n_iterations=int(sys.argv[1]), filename=sys.argv[2], inputs=inputs)
@@ -62,6 +65,7 @@ def test():
 
     inputs = {
         'topic': question,
+        'current_year': datetime.now().year
     }
 
     try:
@@ -95,3 +99,6 @@ def run_with_trigger():
         return result
     except Exception as e:
         raise Exception(f"An error occurred while running the crew with trigger: {e}")
+
+if __name__ == "__main__":
+    run()
