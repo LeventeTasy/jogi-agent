@@ -18,6 +18,15 @@ class JogiAgent():
     
     # If you would like to add tools to your agents, you can learn more about it here:
     # https://docs.crewai.com/concepts/agents#agent-tools
+
+    @agent
+    def jogi_strategist(self) -> Agent:
+        return Agent(
+            config=self.agents_config['jogi_strategist'],  # type: ignore[index]
+            verbose=False,
+            temperature=0.1
+        )
+
     @agent
     def jogi_researcher(self) -> Agent:
         return Agent(
@@ -27,9 +36,9 @@ class JogiAgent():
         )
 
     @agent
-    def jogi_analyst(self) -> Agent:
+    def jogi_advisor(self) -> Agent:
         return Agent(
-            config=self.agents_config['jogi_analyst'], # type: ignore[index]
+            config=self.agents_config['jogi_advisor'], # type: ignore[index]
             verbose=False,
             temperature = 0.1
         )
@@ -38,9 +47,15 @@ class JogiAgent():
     # task dependencies, and task callbacks, check out the documentation:
     # https://docs.crewai.com/concepts/tasks#overview-of-a-task
     @task
+    def jogi_strategiai_tervezes_feladat(self) -> Task:
+        return Task(
+            config=self.tasks_config['jogi_strategiai_tervezes_feladat'], # type: ignore[index]
+        )
+
+    @task
     def jogi_kutatasi_feladat(self) -> Task:
         return Task(
-            config=self.tasks_config['jogi_kutatasi_feladat'], # type: ignore[index]
+            config=self.tasks_config['jogi_kutatasi_feladat'],  # type: ignore[index]
         )
 
     @task

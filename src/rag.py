@@ -250,79 +250,78 @@ def query_rag(query_text: str):
             "confidence": confidence
         })
 
-    # ==========================================
-    # HA A CREWAI TOOL-BA RAKOD ÁT A KÓDOT, AKKOR CSAK ENNYI KELL:
-    # return formatted_context
-    # ==========================================
+
+    return formatted_context
+
 
     # Mivel most még a main()-ben teszteljük, lefuttatjuk az LLM-et is:
-    PROMPT_TEMPLATE = """
-    Te egy tűpontos jogi asszisztens vagy. KIZÁRÓLAG a megadott kontextus alapján válaszolj.
-
-    SZABÁLYOK:
-    - Csak a kontextusban szereplő információkat használd.
-    - Tilos bármit kitalálni vagy feltételezni.
-    - Ha a válasz logikailag következik a kontextusból, vond le a következtetést, de jelezd, ha a pontos jogszabályi hely hiányos.
-    - Ha egy cikk vagy paragrafus nem szerepel szó szerint a kontextusban: TILOS megemlíteni.
-    - Ha a több darabban látod ugyanazt a cikkelyt (pl. két "88. cikk" nevű chunk), akkor próbáld meg őket fejben összerakni
-    - Ha a pontos joghely nem szerepel szó szerint a kontextusban, ne nevezd meg.
-    - Ha bizonytalan vagy, mondd azt, hogy a kontextusból nem állapítható meg biztosan.
-    - Ne használj más törvényből származó joghelyet, ha a kérdés nem erre kérdez rá.
-    - Ha a jogszabály szövegéből logikai úton egyértelmű következtetés vonható le, akkor azt határozottan fogalmazd meg.
-
-    KONTEXTUS:
-    {context}
-
-    KÉRDÉS:
-    {question}
-    
-    
-    VÁLASZ FORMÁTUMA (Szigorúan tartsd be ezt a struktúrát!):
-    
-    RÖVID VÁLASZ:
-    [Egy-két mondatos, egyértelmű válasz a kérdésre: Igen/Nem/Részben, stb.]
-    
-    JOGI INDOKOLÁS:
-    [Részletes, kifejtett jogi elemzés bekezdésekre bontva, kizárólag a kontextus alapján.]
-    
-    JOGSZABÁLYI HIVATKOZÁSOK:
-    - [Törvény neve] [Pontos cikk/paragrafus száma]
-    
-    BIZONYTALANSÁG / KIVÉTELEK:
-    [Ha a kontextus hiányos, vagy vannak speciális kivételek, itt említsd meg. Ha nincs, írd azt: "Nincs."]
-    """
-
-    prompt_template = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
-    # Beletoljuk az új, szuper-strukturált kontextusunkat! 💅
-    prompt = prompt_template.format(context=formatted_context, question=query_text)
-
-    llm = ChatGoogleGenerativeAI(
-        model="gemini-2.5-flash",
-        temperature=0
-    )
-
-    response_text = llm.invoke(prompt)
-
-    # Visszaadjuk a választ ÉS az új JSON-ready forrásokat!
-    print("\n" + "=" * 50)
-    print("VÁLASZ:")
-    print(response_text.content)
-
-    print("\nFORRÁSOK (JSON-ready az Agentnek):")
-    import json
-
-    seen = set()
-    dedup_sources = []
-    for item in source_list:
-        key = (item["source"], item["section_id"])
-        if key not in seen:
-            seen.add(key)
-            dedup_sources.append(item)
-    print(json.dumps(dedup_sources, indent=2, ensure_ascii=False))
-
-    print("=" * 50)
-
-    return response_text.content
+    # PROMPT_TEMPLATE = """
+    # Te egy tűpontos jogi asszisztens vagy. KIZÁRÓLAG a megadott kontextus alapján válaszolj.
+    #
+    # SZABÁLYOK:
+    # - Csak a kontextusban szereplő információkat használd.
+    # - Tilos bármit kitalálni vagy feltételezni.
+    # - Ha a válasz logikailag következik a kontextusból, vond le a következtetést, de jelezd, ha a pontos jogszabályi hely hiányos.
+    # - Ha egy cikk vagy paragrafus nem szerepel szó szerint a kontextusban: TILOS megemlíteni.
+    # - Ha a több darabban látod ugyanazt a cikkelyt (pl. két "88. cikk" nevű chunk), akkor próbáld meg őket fejben összerakni
+    # - Ha a pontos joghely nem szerepel szó szerint a kontextusban, ne nevezd meg.
+    # - Ha bizonytalan vagy, mondd azt, hogy a kontextusból nem állapítható meg biztosan.
+    # - Ne használj más törvényből származó joghelyet, ha a kérdés nem erre kérdez rá.
+    # - Ha a jogszabály szövegéből logikai úton egyértelmű következtetés vonható le, akkor azt határozottan fogalmazd meg.
+    #
+    # KONTEXTUS:
+    # {context}
+    #
+    # KÉRDÉS:
+    # {question}
+    #
+    #
+    # VÁLASZ FORMÁTUMA (Szigorúan tartsd be ezt a struktúrát!):
+    #
+    # RÖVID VÁLASZ:
+    # [Egy-két mondatos, egyértelmű válasz a kérdésre: Igen/Nem/Részben, stb.]
+    #
+    # JOGI INDOKOLÁS:
+    # [Részletes, kifejtett jogi elemzés bekezdésekre bontva, kizárólag a kontextus alapján.]
+    #
+    # JOGSZABÁLYI HIVATKOZÁSOK:
+    # - [Törvény neve] [Pontos cikk/paragrafus száma]
+    #
+    # BIZONYTALANSÁG / KIVÉTELEK:
+    # [Ha a kontextus hiányos, vagy vannak speciális kivételek, itt említsd meg. Ha nincs, írd azt: "Nincs."]
+    # """
+    #
+    # prompt_template = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
+    # # Beletoljuk az új, szuper-strukturált kontextusunkat! 💅
+    # prompt = prompt_template.format(context=formatted_context, question=query_text)
+    #
+    # llm = ChatGoogleGenerativeAI(
+    #     model="gemini-2.5-flash",
+    #     temperature=0
+    # )
+    #
+    # response_text = llm.invoke(prompt)
+    #
+    # # Visszaadjuk a választ ÉS az új JSON-ready forrásokat!
+    # print("\n" + "=" * 50)
+    # print("VÁLASZ:")
+    # print(response_text.content)
+    #
+    # print("\nFORRÁSOK (JSON-ready az Agentnek):")
+    # import json
+    #
+    # seen = set()
+    # dedup_sources = []
+    # for item in source_list:
+    #     key = (item["source"], item["section_id"])
+    #     if key not in seen:
+    #         seen.add(key)
+    #         dedup_sources.append(item)
+    # print(json.dumps(dedup_sources, indent=2, ensure_ascii=False))
+    #
+    # print("=" * 50)
+    #
+    # return response_text.content
 
 
 def build_rag():
