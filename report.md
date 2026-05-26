@@ -1,31 +1,23 @@
-# Jogi Tájékoztató Jelentés: Személyes Adatok Kezelése Hozzájárulás Alapján
+# JOGI SZAKVÉLEMÉNY: A GDPR 88. cikk teljes mértékben felülírja a magyar Munka Törvénykönyv adatkezelési szabályait?
 
-**Dátum:** 2023. október 27.
+### RÖVID VÁLASZ
+Részben. A GDPR 88. cikk lehetőséget ad a tagállamoknak arra, hogy a munkaviszony keretében történő adatkezelésre további feltételeket és intézkedéseket állapítsanak meg, ezáltal kiegészítve, de nem teljes mértékben felülírva a nemzeti szabályozást, mint például a Munka Törvénykönyve.
 
-## 1. A Kérdésre Vonatkozó Közvetlen Válasz
+### JOGI INDOKOLÁS
+A kérdés arra irányul, hogy a természetes személyek személyes adatainak kezelése tekintetében az Európai Parlament és a Tanács (EU) 2016/679 rendelete (a továbbiakban: GDPR) 88. cikke teljes mértékben felülírja-e a magyar Munka Törvénykönyvéről szóló 2012. évi I. törvény (a továbbiakban: Mt.) adatkezelési szabályait a foglalkoztatás keretében.
 
-A személyes adatok kezeléséhez történő hozzájárulásnak **önkéntesnek, konkrétnak, tájékoztatáson alapulónak és egyértelműnek** kell lennie. Az adatkezelő felelős annak bizonyításáért, hogy az érintett hozzájárult személyes adatainak kezeléséhez. Különösen érzékeny adatok esetén **kifejezett hozzájárulás** szükséges.
+A GDPR 88. cikke kifejezetten a munkaviszony keretében történő adatkezelésre vonatkozik. Az 1. pontja kimondja, hogy a tagállamok jogszabályban állapíthatnak meg további feltételeket, beleértve a technikai és szervezési intézkedéseket is, a természetes személyek adatainak kezelése tekintetében a munkáltatói kontextusban, figyelembe véve a GDPR 6. cikk (1) bekezdésében és 49. cikk (1) bekezdésének b) pontjában foglaltakat. A 2. pontja tovább pontosítja, hogy ez a rendelet nem érinti a tagállamok azon lehetőségét, hogy jogszabályban további feltételeket, beleértve a technikai és szervezési intézkedéseket is, állapítsanak meg a munkavállalók adatainak kezelése céljából a munkaviszonyban, figyelembe véve a GDPR 6. cikk (1) bekezdésének b) pontját, valamint a 9. cikk (2) bekezdésének b) pontját.
 
-## 2. Részletes Kifejtés és Jogi Konktextus
+Ebből egyértelműen következik, hogy a GDPR 88. cikke nem célja a nemzeti szintű, munkaviszonyra vonatkozó adatkezelési szabályok teljes hatályon kívül helyezése. Ehelyett felhatalmazza a tagállamokat arra, hogy a GDPR keretein belül, annak elveit és alapvető szabályait tiszteletben tartva, további, a nemzeti sajátosságoknak jobban megfelelő feltételeket és szabályozásokat vezessenek be a munkavállalói adatkezelés vonatkozásában. Ezen szabályoknak továbbra is összhangban kell állniuk a GDPR általános rendelkezéseivel.
 
-A személyes adatok kezelése során a hozzájárulás az egyik lehetséges jogalap. A General Data Protection Regulation (GDPR) rendelet meghatározza a hozzájárulás fogalmát és feltételeit.
+A magyar Munka Törvénykönyve 25. §-a rendezi a munkavállalói személyes adatok kezelését. Az (1) bekezdés rögzíti, hogy a munkáltató a munkaviszony létesítésével, tartalmával és megszűnésével, valamint a munkaviszony szünetelésével összefüggő célokból kezelheti a munkavállaló személyes adatait. A (2) bekezdés korlátozza az adatkezelést azokra a személyes adatokra, amelyek a munkaviszonnyal összefüggő célok megvalósításához elengedhetetlenek. A (3) bekezdés pedig előírja, hogy a munkáltató köteles a munkavállaló személyes adatait az e törvényben, valamint más jogszabályban meghatározott keretek között kezelni. A 26. § (1) bekezdése megerősíti, hogy a munkáltató csak olyan adatot kezelhet, amely a munkaviszony teljesítéséhez elengedhetetlenül szükséges.
 
-### 2.1. A Hozzájárulás Fogalma és Feltételei
+A GDPR 88. cikk és a Mt. 25. és 26. §-ai közötti viszony nem felülírási, hanem kiegészítési jellegű. A GDPR 88. cikk adja meg a keretet és a felhatalmazást a nemzeti szabályozás számára, hogy pontosítsa és kiegészítse a munkaviszony specifikus viszonyaira tekintettel az adatkezelés feltételeit. A magyar Mt. rendelkezései tehát a GDPR 88. cikkében foglalt felhatalmazás alapján kerültek megalkotásra és alkalmazásra. Amennyiben a nemzeti szabályozás túllépne a GDPR 88. cikkében rögzített kereteken, vagy ellentmondana a GDPR más alapvető rendelkezéseinek, akkor azzal szemben a GDPR rendelkezései érvényesülnének. Azonban a jelenlegi Mt. szabályok a rendelkezésre álló információk alapján illeszkednek a GDPR 88. cikk által biztosított mozgástérbe, meghatározva a munkáltató által kezelhető adatok körét és célját.
 
-A GDPR 4. cikk 11. pontja értelmében a **hozzájárulás** az érintett akaratának **önkéntes, konkrét, tájékoztatáson alapuló és egyértelmű kinyilvánítása**. Ezen kinyilvánítás történhet kijelentéssel vagy egyértelmű megerősítő cselekedettel, mellyel az érintett jelzi beleegyezését az őt érintő személyes adatok kezeléséhez.
+### JOGSZABÁLYI HIVATKOZÁSOK
+*   Az Európai Parlament és a Tanács (EU) 2016/679 rendelete (2016. április 27.) a természetes személyeknek a személyes adatok kezelése tekintetében történő védelméről és az ilyen adatok szabad áramlásáról, valamint a 95/46/EK irányelv hatályon kívül helyezéséről (általános adatvédelmi rendelet) - 88. cikk
+*   2012. évi I. törvény a Munka Törvénykönyvéről - 25. §
+*   2012. évi I. törvény a Munka Törvénykönyvéről - 26. §
 
-### 2.2. Az Adatkezelő Felelőssége a Hozzájárulás Bizonyításában
-
-Amennyiben az adatkezelés jogalapja az érintett hozzájárulása, az adatkezelő viseli a bizonyítási terhet. Ez azt jelenti, hogy az adatkezelőnek **képesnek kell lennie igazolni**, hogy az érintett ténylegesen és jogszerűen hozzájárult személyes adatainak kezeléséhez ([GDPR 7. cikk, 1. pont]).
-
-### 2.3. A Hozzájárulás Nyilvánosságra Hozatala és Visszavonásának Egyszerűsége
-
-Ha a hozzájárulás írásbeli nyilatkozat formájában történik, amely más ügyekre is kiterjed, a hozzájárulás kérésének **világosnak, tömörnek és az adatkezelés céljaitól elkülönülőnek** kell lennie. Ezen túlmenően, az érintett hozzájárulásának visszavonása **ugyanolyan egyszerű kell, hogy legyen, mint annak megadása** ([GDPR 7. cikk, 2. pont]). Ez biztosítja az érintettek számára a kontroll lehetőségét személyes adataik kezelése felett.
-
-### 2.4. Kifejezett Hozzájárulás Különleges Személyes Adatok Esetén
-
-A rendelet külön kiemeli a **különleges személyes adatok** (például egészségügyi adatok, faji vagy etnikai származásra, politikai véleményre, vallási vagy világnézeti meggyőződésre, szakszervezeti tagságra, szexuális életre vagy szexuális irányultságra vonatkozó adatok) kezelését. Ezekre az adatokra vonatkozóan az általános hozzájárulási feltételeken túlmenően **kifejezett hozzájárulás** szükséges, kivéve, ha az uniós vagy a tagállami jog a hozzájárulás visszavonását tiltja ([GDPR 9. cikk, 2. pont, a alpont]).
-
-## 3. Összefoglaló Konklúzió
-
-A személyes adatok kezelése során a hozzájárulás egy hatékony jogalap lehet, amennyiben annak minden feltétele teljesül. Az adatkezelőknek gondoskodniuk kell arról, hogy a hozzájárulás kérése egyértelmű, megkülönböztethető és könnyen visszavonható legyen, különösen a különleges személyes adatok kezelése esetében, ahol a kifejezett hozzájárulás elengedhetetlen. Az adatkezelő felelőssége a hozzájárulás jogszerűségének és megtörténtének igazolása.
+### KIVÉTELEK / BIZONYTALANSÁG
+Nincs.
