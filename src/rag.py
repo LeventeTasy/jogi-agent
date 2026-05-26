@@ -268,12 +268,28 @@ def query_rag(query_text: str):
     - Ha a pontos joghely nem szerepel szó szerint a kontextusban, ne nevezd meg.
     - Ha bizonytalan vagy, mondd azt, hogy a kontextusból nem állapítható meg biztosan.
     - Ne használj más törvényből származó joghelyet, ha a kérdés nem erre kérdez rá.
+    - Ha a jogszabály szövegéből logikai úton egyértelmű következtetés vonható le, akkor azt határozottan fogalmazd meg.
 
     KONTEXTUS:
     {context}
 
     KÉRDÉS:
     {question}
+    
+    
+    VÁLASZ FORMÁTUMA (Szigorúan tartsd be ezt a struktúrát!):
+    
+    RÖVID VÁLASZ:
+    [Egy-két mondatos, egyértelmű válasz a kérdésre: Igen/Nem/Részben, stb.]
+    
+    JOGI INDOKOLÁS:
+    [Részletes, kifejtett jogi elemzés bekezdésekre bontva, kizárólag a kontextus alapján.]
+    
+    JOGSZABÁLYI HIVATKOZÁSOK:
+    - [Törvény neve] [Pontos cikk/paragrafus száma]
+    
+    BIZONYTALANSÁG / KIVÉTELEK:
+    [Ha a kontextus hiányos, vagy vannak speciális kivételek, itt említsd meg. Ha nincs, írd azt: "Nincs."]
     """
 
     prompt_template = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
