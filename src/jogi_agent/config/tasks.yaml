@@ -1,65 +1,70 @@
 jogi_strategiai_tervezes_feladat:
   description: >
     Elemezze a felhasználó által feltett kérdést a(z) {topic} témakörben. 
-    Azonosítsa, hogy a kérdés melyik jogterületet (GDPR, Mt., Ptk., vagy Vegyes) érinti, 
-    és határozza meg a kérdés típusát (pl. definíciós, hatálybeli korlátozás, kivétel keresése). 
-    Állítson össze egy precíz, célzott jogi kulcsszó-listát, amellyel a kutató ágens elindíthatja a RAG keresést, 
-    minimalizálva az irrelevant találatok (pl. a 47. cikk embedding driftje) behúzásának esélyét.
+    Határozza meg a releváns jogterületeket és a kérdés dogmatikai típusát (pl. definíció, hatálybeli korlátozás, kivétel keresése). 
+    Állítson össze egy célzott kulcsszó-listát a RAG keresőmotor számára, amely alkalmas a kontextuális zaj minimalizálására.
   expected_output: >
-    Egy strukturált stratégiai terv, amely tartalmazza a kérdés jogi kategóriáját, 
-    a fókuszba veendő törvényeket és a javasolt RAG keresőszavakat.
+    Egy strukturált stratégiai terv, amely tartalmazza a kérdés jogi besorolását, a fókuszba veendő törvényeket és a javasolt keresőszavakat.
   agent: jogi_strategist
 
 jogi_kutatasi_feladat:
   description: >
-    A jogi stratégia és a javasolt kulcsszavak alapján végezzen célzott keresést a RAG keresőeszköz használatával. 
-    Gyűjtse ki a legrelevánsabb jogszabályi helyeket. Aktívan szűrje ki a kontextuális zajt. 
-    Minden kinyert adatot szigorúan a megadott JSON formátumban kell továbbadnia az elemzőnek.
+    A javasolt kulcsszavak alapján futtassa le a Jogi RAG Kereső Eszközt. 
+        Gyűjtse ki a legrelevánsabb jogszabályi helyeket. 
+        SZIGORÚ UTASÍTÁS: A kinyert adatokat másolja a megadott JSON formátumba. A "raw_text" mezőbe 
+        MAXIMUM 3-4 releváns mondatot másolhat be a kontextusból. Tilos a teljes szövegblokkokat kritikátlanul bemásolni, 
+        és szigorúan tilos szavakat vagy mondatrészeket indokolatlanul ismételni!
   expected_output: >
-    Egy JSON lista, amely tartalmazza a megtalált jogszabályi hivatkozásokat. 
-    Minden objektumnak az alábbi mezőket kell tartalmaznia:
+    Egy érvényes JSON lista, amely magyarázó szöveg nélkül tartalmazza a megtalált jogszabályi hivatkozásokat az alábbi mezőkkel:
     [
       {{
-        "source": "A forrásfájl neve (pl. GDPR_2016.pdf)",
-        "law": "A törvény pontos megnevezése (pl. GDPR rendelet)",
-        "page": "A metaadatból nyert oldalszám vagy 'multiple'",
-        "article": "A szakasz vagy cikk azonosítója (pl. 7. cikk vagy 11. §)",
-        "quote": "A vonatkozó jogszabályi részlet pontos, szó szerinti idézete a RAG kontextusból",
-        "topic": "Az ágens által meghatározott rövid kulcsszó a szakasz lényegéről",
-        "distance": "A vektoros keresésből kapott távolság pontszáma"
+        "source": "A forrásfájl neve",
+        "law": "A törvény pontos megnevezése",
+        "page": "Az oldalszám",
+        "article": "A szakasz vagy cikk azonosítója",
+        "raw_text": "A teljes kinyert szövegblokk",
+        "distance": "A vektoros távolság pontszáma"
       }}
     ]
-    Fontos: Csak érvényes JSON formátumot fogadok el, magyarázó szöveg nélkül!
   agent: jogi_researcher
+
+jogszabalyi_megalapozottsag_feladat:
+  description: >
+    Elemezze a kutató ágens által átadott JSON listát. Hajtson végre mikroszintű szövegelemzést (Statute Grounding): 
+    azonosítsa a pontos bekezdéseket, alpontokat, és válassza ki azt a konkrét, szó szerinti mondatot, amely közvetlenül megválaszolja a kérdést. 
+    Szűrje ki a releváns cikkeken belüli felesleges bekezdéseket vagy irreleváns utalásokat.
+  expected_output: >
+    Egy finomított, validált JSON lista, ahol a "quote" mező kizárólag a releváns, hitelesített jogszabályi mondatokat tartalmazza, 
+    valamint az "article" mező kiegészül a pontos bekezdésszámmal (pl. 88. cikk (1) bekezdés).
+  agent: jogi_grounding_verifier
 
 jogi_tanacsadoi_feladat:
   description: >
-    A kutató által feltárt és a JSON listában átadott pontos jogszabályi kontextus alapján készítsen egy 
-    professzionális, magas szintű jogi szakvéleményt a felhasználó kérdésére. 
+    A hitelesített jogszabályi adatok alapján készítse el a végső, formális jogi szakvéleményt.
     
-    SZABÁLYOK (Kritikus):
-    1. Legal Reasoning: Ne csak gépiesen ismételje meg a forrás mondatait! Vonjon le logikus, egyértelmű 
-       következtetéseket a jogszabály szerkezetéből és szellemiségéből, ha azok tisztán adódnak. Ne használjon 
-       gyáva vagy túlbiztosított kitérő válaszokat ott, ahol a kontextus egyértelmű.
-    2. Citation Verification: Szigorúan ellenőrizze le, hogy a válaszában megemlített minden egyes cikk 
-       vagy paragrafus (pl. GDPR 7. cikk) TÉNYLEGESEN szerepel-e a kutató által visszadott JSON forráslistában. 
-       Ha egy cikk nincs benne a forrásban, TILOS megemlíteni vagy hivatkozni rá!
+    KÖTELEZŐ SZABÁLYOK:
+    1. Jogszabályi levezetés: Az indokolásban explicit módon a pontos bekezdések szövegezésére és szó szerinti fordulataira támaszkodjon. 
+       A következtetéseket deduktív módon, a jogszabályhelyek pontos idézésével támassza alá.
+    2. Kockázati szűrés (Risk Scan): Vizsgálja felül a saját megfogalmazásait. Ha a szöveg abszolút kijelentéseket tartalmaz 
+       (pl. 'mindig', 'soha', 'kizárólag', 'teljes mértékben'), ellenőrizze, hogy a forrásszöveg enged-e meg kivételeket. 
+       Az esetleges normatív kivételeket és jogi kockázatokat külön fejezetben kell rögzíteni.
+    3. Forrásvalidáció: Csak olyan jogszabályhelyre hivatkozhat, amely bizonyíthatóan szerepel a bemeneti listában.
   expected_output: >
-    Egy professzionális, Markdown formátumú jogi tájékoztató jelentés, amely szigorúan az alábbi formátumot követi:
+    Egy professzionális, Markdown formátumú jogi tájékoztató jelentés, amely szigorúan az alábbi struktúrát követi:
     
     # JOGI SZAKVÉLEMÉNY: {topic}
     
     ### RÖVID VÁLASZ
-    [Egy-két mondatos, teljesen egyértelmű válasz a kérdésre: Igen / Nem / Részben]
+    [Egy-két mondatos, kategorikus és egyértelmű válasz a kérdésre: Igen / Nem / Részben]
     
     ### JOGI INDOKOLÁS
-    [Részletes, logikusan felépített, bekezdésekre bontott jogi elemzés a kinyert adatok alapján]
+    [Részletes, bekezdésekre bontott jogi elemzés, a pontos jogszabályi szövegek explicit beépítésével és levezetésével]
     
     ### JOGSZABÁLYI HIVATKOZÁSOK
-    - [Törvény pontos neve] [Pontos cikk vagy paragrafus száma]
+    - [Törvény pontos neve] [Pontos cikk/paragrafus és bekezdés megjelölése]
     
-    ### KIVÉTELEK / BIZONYTALANSÁG
-    [A szabály alóli releváns kivételek, vagy ha a kontextus parciális hiánya miatt valami nem dönthető el. Ha nincs, írja oda: "Nincs."]
+    ### KOCKÁZATI TÉNYEZŐK ÉS KIVÉTELEK
+    [A kockázati szűrés eredménye: a szabály alkalmazhatóságának korlátai, kivételek. Ha nincs kockázat, a mező értéke: "Nincs."]
     
-    A formázás során ne használjon kódblokk (```) jelöléseket a teljes szövegre!
+    A formázás során kódblokk (```) jelölések használata a teljes szövegre tilos!
   agent: jogi_advisor

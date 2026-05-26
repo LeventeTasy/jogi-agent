@@ -60,7 +60,10 @@ class MyCustomTool(BaseTool):
             # ChatGPT kérése: Ne confidence, hanem distance score legyen! 📐
             distance_score = round(float(_score), 4)
 
+            clean_content = doc.page_content[:1500] + "... [vágva a stabilitásért]" if len(
+                doc.page_content) > 1500 else doc.page_content
+
             header = f"[Törvény: {law} | Hely: {sid} | Távolság: {distance_score} | Oldal: {page} | Forrásfájl: {src}]"
-            formatted_context += f"{header}\n{doc.page_content}\n\n---\n\n"
+            formatted_context += f"{header}\n{clean_content}\n\n---\n\n"
 
         return formatted_context
