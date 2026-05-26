@@ -3,7 +3,8 @@ import sys
 import warnings
 
 from datetime import datetime
-
+from rich.console import Console
+from rich.markdown import Markdown
 from jogi_agent.crew import JogiAgent
 
 warnings.filterwarnings("ignore", category=SyntaxWarning, module="pysbd")
@@ -17,6 +18,8 @@ def run():
     """
     Run the crew.
     """
+    console = Console()
+
     question = input(": ")
 
     while question != "break":
@@ -27,10 +30,16 @@ def run():
 
         try:
             result = JogiAgent().crew().kickoff(inputs=inputs)
-            print(result.raw)
+
+            formatted_markdown = Markdown(str(result.raw))
+            console.print("\n" + "=" * 60 + "\n", style="bold blue")
+            console.print(formatted_markdown)
+            console.print("\n" + "=" * 60 + "\n", style="bold blue")
+
         except Exception as e:
             raise Exception(f"An error occurred while running the crew: {e}")
 
+        # Következő kérdés bekérése a ciklusban
         question = input(": ")
 
 def test_questions():
@@ -146,4 +155,4 @@ def run_with_trigger():
         raise Exception(f"An error occurred while running the crew with trigger: {e}")
 
 if __name__ == "__main__":
-    test_questions()
+    run()

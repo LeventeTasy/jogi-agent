@@ -13,6 +13,7 @@ dependencies = [
     "langchain-google-genai>=4.2.2",
     "pypdf>=6.10.2",
     "python-dotenv>=1.2.2",
+    "rich>=14.3.4",
 ]
 
 [project.scripts]

@@ -1,22 +1,26 @@
-# JOGI SZAKVÉLEMÉNY: Ha egy adatot közérdekből kezelnek, akkor kérhető-e annak törlése a GDPR szerint?
+# JOGI SZAKVÉLEMÉNY: A GDPR szerint mindig érvénytelen a hozzájárulás, ha szolgáltatás igénybevételéhez kötik?
 
 ### RÖVID VÁLASZ
-Részben.
+Részben. A hozzájárulás érvénytelen lehet, ha azt szerződéses feltételként szabják meg, és az adatkezelés nem elengedhetetlen a szerződés teljesítéséhez, de nem minden esetben.
 
 ### JOGI INDOKOLÁS
 
-A személyes adatok törléséhez való jog, ismertebb nevén az „elfeledtetéshez való jog” alapvető jog az Európai Unió Általános Adatvédelmi Rendeletében (GDPR). Azonban ez a jog nem abszolút, és léteznek olyan helyzetek, amikor az adatkezelő megtagadhatja a törlési kérelem teljesítését. A közérdekből történő adatkezelés az egyik ilyen körülmény.
+A kérdés megválaszolásához a személyes adatok védelméről szóló, 2016/679 európai parlamenti és tanácsi rendelet (GDPR) 7. cikkének (4) bekezdését kell vizsgálni. Ez a rendelkezés pontosan arra a helyzetre terjed ki, amikor a hozzájárulás megadását szerződéses feltételként szabják meg.
 
-Az általános adatvédelmi rendelet 17. cikke részletesen szabályozza a törléshez való jogot és annak kivételeit. A rendelet 17. cikkének (3) bekezdése, különösen annak a) pontja kimondja, hogy az (1) bekezdésben foglalt rendelkezések – tehát a törléshez való jog – nem alkalmazandók, amennyiben az adatkezelés „az 5. cikk (1) bekezdésében meghatározott adatvédelmi elvekkel összhangban, közérdekből archiválási célból vagy tudományos és történelmi kutatási célból végzett adatkezelés szükséges mértékéig” történik. Ez azt jelenti, hogy amennyiben a személyes adatok kezelése közérdekből, különösen archiválási, tudományos vagy történelmi kutatási célból történik, és az adatkezelés a GDPR 5. cikk (1) bekezdésében rögzített adatvédelmi elvekkel összhangban van, az adatkezelő megtagadhatja a törlési kérelem teljesítését.
+A GDPR 7. cikk (4) bekezdése kimondja: „Különösen akkor, ha a hozzájárulás megadását szerződéses feltételként szabják, miközben az adatkezelés nem elengedhetetlen a szerződés teljesítéséhez, a hozzájárulás megadását nem lehet érvényesíteni."
 
-Továbbá, a GDPR 21. cikk (5) bekezdése pontosítja az adatkezelő azon jogát, hogy megtagadhassa a törléshez való jog érvényesítését, ha a személyes adatok kezelésére „közérdekből nyilvános vagy az adatkezelőre ruházott közhatalmi gyakorlás keretében végezzen feladatot”. Ebben az esetben az adatkezelő az érintett 17. cikk (1) bekezdése szerinti törléshez való jogát „az e rendeletben meghatározott kivételeknek kizárólag az e rendeletben meghatározott, a közérdek védelmére irányuló szempontok szerinti felülvizsgálatát követően” tagadhatja meg. Ez a rendelkezés kiemeli, hogy a közérdek védelme elsőbbséget élvezhet a törléshez való joggal szemben, de az adatkezelőnek szigorú vizsgálatot kell lefolytatnia, és meg kell győződnie arról, hogy a közérdek valóban indokolja a törlés megtagadását.
+E rendelkezésből egyértelműen levezethető, hogy a hozzájárulás akkor válik érvénytelenné, ha két feltétel együttesen teljesül:
+1.  A hozzájárulás megadását szerződéses feltételként szabják meg.
+2.  Az adatkezelés, amelyre a hozzájárulást kérik, nem elengedhetetlen a szerződés teljesítéséhez.
 
-Összefoglalva, bár alapvetően kérhető a személyes adatok törlése, ha az adatkezelés közérdekből történik, az adatkezelő a fent hivatkozott jogszabályi rendelkezések alapján megtagadhatja a kérelem teljesítését, amennyiben az adatkezelés a közérdek, illetve archiválási, tudományos vagy történelmi kutatási célokhoz szükséges és megfelel az adatvédelmi elveknek.
+Ez azt jelenti, hogy amennyiben a hozzájárulás megadása szerződéses feltétel, de az adatkezelés *elengedhetetlen* a szerződés teljesítéséhez (például egy szállítási szerződéshez szükséges a szállítási cím megadása és kezelése), akkor a hozzájárulás érvényes lehet. A GDPR 7. cikk (4) bekezdése nem állítja, hogy *minden* esetben érvénytelen a hozzájárulás, ha szolgáltatás igénybevételéhez kötik, hanem egy specifikus forgatókönyvre vonatkozik, ahol a hozzájárulás feltételéhez kötése nem indokolt a szerződés szempontjából.
+
+A hozzájárulás önkéntességének követelménye (GDPR 4. cikk (11) bekezdés) alapvető, és a 7. cikk (4) bekezdése ezt az önkéntességet hivatott biztosítani olyan helyzetekben, ahol a felek közötti erőviszonyok eltérhetnek (pl. fogyasztó és szolgáltató között). Ha a szolgáltatás igénybevételének egyetlen feltétele a hozzájárulás megadása egy olyan adatkezeléshez, amely nem szükséges a szolgáltatás nyújtásához, az az érintett önkéntes hozzájárulásának hiányát jelenti.
 
 ### JOGSZABÁLYI HIVATKOZÁSOK
-*   AZ EURÓPAI PARLAMENT ÉS A TANÁCS (EU) 2016/679 RENDELETE (GDPR)
-    *   17. cikk (3) bekezdés a) pont
-    *   21. cikk (5) bekezdés
+*   GDPR (2016/679) - AZ EURÓPAI PARLAMENT ÉS A TANÁCS (EU) 2016/679 RENDELETE, 7. cikk (4) bekezdés
 
 ### KOCKÁZATI TÉNYEZŐK ÉS KIVÉTELEK
-A közérdekű adatkezelés esetén a törléshez való jog gyakorlása korlátozott. A 17. cikk (3) bekezdés a) pontja alapján a törléshez való jog nem alkalmazandó, amennyiben az adatkezelés „közérdekből archiválási célból vagy tudományos és történelmi kutatási célból végzett adatkezelés szükséges mértékéig” történik, feltéve, hogy ez összhangban van az 5. cikk (1) bekezdésében meghatározott adatvédelmi elvekkel. A 21. cikk (5) bekezdése tovább pontosítja, hogy közérdekből vagy közhatalmi feladat ellátása keretében végzett adatkezelés esetén az adatkezelő a törlés megtagadását a közérdek védelmére irányuló szempontok szerinti felülvizsgálatát követően teheti meg. Ez azt jelenti, hogy az adatkezelőnek mérlegelnie kell a közérdek és az érintett jogai közötti egyensúlyt. A GDPR nem zárja ki abszolút módon a törlési jog gyakorlását, hanem feltételekhez köti.
+A jogi kockázat abban rejlik, hogy a "nem elengedhetetlen a szerződés teljesítéséhez" kritérium megítélése szubjektív lehet. A szolgáltatóknak egyértelműen be kell tudniuk mutatniuk, hogy miért tekintendő elengedhetetlennek az adott adatkezelés a szerződés teljesítése szempontjából. Amennyiben ez a kapcsolat nem bizonyítható egyértelműen, a hozzájárulás érvénytelenségének kockázata fennáll.
+
+A kivétel abban rejlik, hogy ha az adatkezelés *valóban* elengedhetetlen a szerződés teljesítéséhez, akkor a hozzájárulás megadása szolgáltatás igénybevételének feltételeként érvényes lehet.
