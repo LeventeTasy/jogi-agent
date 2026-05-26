@@ -36,6 +36,14 @@ class JogiAgent():
         )
 
     @agent
+    def jogi_grounding_verifier(self) -> Agent:
+        return Agent(
+            config=self.agents_config['jogi_grounding_verifier'],  # type: ignore[index]
+            verbose=False,
+            temperature=0.1
+        )
+
+    @agent
     def jogi_advisor(self) -> Agent:
         return Agent(
             config=self.agents_config['jogi_advisor'], # type: ignore[index]
@@ -59,6 +67,13 @@ class JogiAgent():
         )
 
     @task
+    def jogszabalyi_megalapozottsag_feladat(self) -> Task:
+        return Task(
+            config=self.tasks_config['jogszabalyi_megalapozottsag_feladat'], # type: ignore[index]
+            output_file='report.md'
+        )
+
+    @task
     def jogi_tanacsadoi_feladat(self) -> Task:
         return Task(
             config=self.tasks_config['jogi_tanacsadoi_feladat'], # type: ignore[index]
@@ -75,6 +90,6 @@ class JogiAgent():
             agents=self.agents, # Automatically created by the @agent decorator
             tasks=self.tasks, # Automatically created by the @task decorator
             process=Process.sequential,
-            verbose=True,
+            verbose=0,
             # process=Process.hierarchical, # In case you wanna use that instead https://docs.crewai.com/how-to/Hierarchical/
         )
