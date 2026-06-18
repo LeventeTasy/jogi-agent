@@ -142,7 +142,7 @@ def add_chroma(chunks: list[Document]):
 
     existing_items = db.get(include=[])
     existing_ids = set(existing_items["ids"])
-    print(f"Jelenlegi dokumentumok száma a DB-ben: {len(existing_ids)} 📚")
+    print(f"Jelenlegi dokumentumok száma a DB-ben: {len(existing_ids)}")
 
     new_chunks = []
 
@@ -177,7 +177,7 @@ def add_chroma(chunks: list[Document]):
         for attempt in range(max_retries):
             try:
                 db.add_documents(batch, ids=batch_ids)
-                print(f"Adag elküldve: {min(i + batch_size, len(new_chunks))}/{len(new_chunks)}... ✅")
+                print(f"Adag elküldve: {min(i + batch_size, len(new_chunks))}/{len(new_chunks)}...")
                 break
             except Exception as e:
                 if attempt < max_retries - 1:
@@ -215,16 +215,14 @@ def query_rag(query_text: str):
         section_id = meta.get("section_id", "ismeretlen")
         page = meta.get("page", "multiple")
 
-        # Matematikai magabiztosság (0 és 1 között, a távolságból számolva) 🧠✨
+        # Matematikai magabiztosság (0 és 1 között, a távolságból számolva)
         confidence = round(1 - min(score, 1.0), 2)
 
-        # 2. Megépítjük a fejlécet, ahogy kérted
         header = f"[Törvény: {law} | Hely: {section_id} | Oldal: {page} | Forrásfájl: {source_file} | Bizonyosság: {confidence}]"
 
-        # 3. Hozzáadjuk a formázott kontextushoz
         formatted_context += f"{header}\n{doc.page_content}\n\n---\n\n"
 
-        # 4. JSON-ready lista építése az ágensnek
+        # 4. JSON lista építése az ágensnek
         source_list.append({
             "source": source_file,
             "law": law,
