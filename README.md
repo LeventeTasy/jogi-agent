@@ -18,14 +18,6 @@ Next, navigate to your project directory and install the dependencies:
 ```bash
 crewai install
 ```
-### Customizing
-
-**Add your `OPENAI_API_KEY` into the `.env` file**
-
-- Modify `src/jogi_agent/config/agents.yaml` to define your agents
-- Modify `src/jogi_agent/config/tasks.yaml` to define your tasks
-- Modify `src/jogi_agent/crew.py` to add your own logic, tools and specific args
-- Modify `src/jogi_agent/main.py` to add custom inputs for your agents and tasks
 
 ## Running the Project
 
@@ -35,20 +27,28 @@ To kickstart your crew of AI agents and begin task execution, run this from the 
 $ crewai run
 ```
 
-This command initializes the jogi-agent Crew, assembling the agents and assigning them tasks as defined in your configuration.
-
 This example, unmodified, will run the create a `report.md` file with the output of a research on LLMs in the root folder.
 
-## Understanding Your Crew
+Multi-Agent RAG Architektúra Alkalmazása Magyar Jogi DokumentumokonProjektleírásEz a projekt egy autonóm ágensorientált megközelítésre épülő, nagydimenziós szemantikus kereső és dokumentum-elemző rendszer (Retrieval-Augmented Generation). A fejlesztés elsődleges célja komplex, strukturálatlan magyar jogi forrásszövegek – kiemelten a Polgári Törvénykönyv (PTK), a Személyi Jövedelemadó törvény (SZJA), valamint a GDPR szabályozás – hatékony feldolgozása, indexelése és kontextus-tudatos, magas pontosságú megválaszolása.  Rendszerarchitektúra és Főbb KomponensekTöbbágenses koordináció (CrewAI keretrendszer): A válaszadási folyamat elosztott intelligenciára épül. A rendszerben dedikált, autonóm ágensek (Kutató, Elemző, Kritikus) működnek együtt, amelyek feladat-delegálási folyamatokon keresztül ellenőrzik egymás kimenetét a jogi pontosság biztosítása érdekében.  Vektoros adatbázis és szemantikus keresés (ChromaDB): A jogi forrásdokumentumok beágyazását (embedding) követően a szövegrészletek lokális ChromaDB vektor-térbe kerülnek. A releváns kontextus kinyerése koszinusz-hasonlósági metrikák alapján történik.  Jogi szövegekre optimalizált chunking pipeline: Egyedi, reguláris kifejezésekre épülő darabolási stratégia, amely illeszkedik a magyar jogszabályok szerkezetéhez (cikkelyek, bekezdések, pontok). Ez biztosítja, hogy a kinyert kontextus szemantikailag egységes maradjon.  
+Projektstruktúra
 
-The jogi-agent Crew is composed of multiple AI agents, each with unique roles, goals, and tools. These agents collaborate on a series of tasks, defined in `config/tasks.yaml`, leveraging their collective skills to achieve complex objectives. The `config/agents.yaml` file outlines the capabilities and configurations of each agent in your crew.
-
-## Support
-
-For support, questions, or feedback regarding the JogiAgent Crew or crewAI.
-- Visit our [documentation](https://docs.crewai.com)
-- Reach out to us through our [GitHub repository](https://github.com/joaomdmoura/crewai)
-- [Join our Discord](https://discord.com/invite/X4JWnZnxPb)
-- [Chat with our docs](https://chatg.pt/DWjSBZn)
-
-Let's create wonders together with the power and simplicity of crewAI.
+jogi-agent/
+├── chroma_db/               # A beágyazott jogi szövegek lokális vektoros adatbázisa
+├── knowledge/               # Lokális tudásbázis elemek (user_preference.txt)
+├── pdf/                     # A feldolgozott forrásdokumentumok (PTK, SZJA, GDPR)
+├── src/                     # A forráskódot tartalmazó főkönyvtár
+│   └── jogi_agent/          
+│       ├── config/          # Az ágensek és feladatok YAML/konfigurációs fájljai
+│       ├── tools/           # Egyedi ágens-eszközök
+│       │   ├── init.py
+│       │   └── custom_tool.py
+│       ├── init.py
+│       ├── crew.py          # Az ágensek és feladatok logikai összekapcsolása
+│       ├── main.py          # **A Crew futtatásáért felelős belépési pont**
+│       └── report.md        # Lokális jelentés
+│   └── rag.py               # A RAG pipeline és a ChromaDB lekérdezések implementációja
+├── .env.example             # Környezeti változók sablonja az API integrációhoz
+├── .gitignore               # Verziókezelésből kizárt fájlok listája
+├── pyproject.toml           # Projekt metaadatok és függőségek definíciója
+├── README.md                # Projekt szintű fő dokumentáció
+└── uv.lock                  # Az uv dependency manager zárolási fájlja  Telepítés és Futtatás1. Környezet előkészítéseA rendszer futtatásához Python 3.10+ környezet szükséges. A függőségek kezelése a modern és gyors uv csomagkezelővel történik. Hozzon létre egy virtuális környezetet, majd szinkronizálja a csomagokat:  uv venvsource .venv/bin/activateuv pip compile requirements.txt -o requirements.txtuv pip sync2. Környezeti változók konfigurálásaA projekt a biztonsági előírásoknak megfelelően nem tartalmaz beágyazott API kulcsokat. A futtatáshoz szükséges a környezeti változók beállítása a lokális fájlban.  Másolja le a mintafájlt az alábbi paranccsal:cp .env.example .envEzt követően a létrejött .env fájlban adja meg a releváns hozzáférési kulcsokat:OPENAI_API_KEY=az_on_openai_kulcsaCREWAI_API_KEY=az_on_crewai_kulcsaCHROMA_DB_PATH=./chroma_db3. A pipeline indításaA teljes munkafolyamat futtatása a gyökérkönyvtárban található bin.py szkript meghívásával történik:python bin.py

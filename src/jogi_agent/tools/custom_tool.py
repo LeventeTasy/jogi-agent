@@ -9,7 +9,6 @@ from rag import build_rag
 
 class JogiKeresoInput(BaseModel):
     """Input schema for MyCustomTool."""
-    # Átneveztem query-re, mert az ágensek jobban értik, mit kell ide írni! 🎯
     query: str = Field(..., description="A jogi kérdés vagy keresőszavak.")
 
 

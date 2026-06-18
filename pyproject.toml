@@ -2,7 +2,7 @@
 name = "jogi_agent"
 version = "0.1.0"
 description = "jogi-agent using crewAI"
-authors = [{ name = "Your Name", email = "you@example.com" }]
+authors = [{ name = "Levente Tasy", email = "tasy.levente2005@gmail.com" }]
 requires-python = ">=3.10,<3.14"
 dependencies = [
     "chromadb>=1.1.1",
