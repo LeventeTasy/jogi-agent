@@ -42,7 +42,7 @@ def run():
         # Következő kérdés bekérése a ciklusban
         question = input(": ")
 
-def test_questions():
+def test():
     """
         Run the crew on test questions.
     """
@@ -70,7 +70,7 @@ def test_questions():
     ]
 
     for question in test_questions:
-        print(f"\n🔍 TESZTELÉS: {question}")
+        print(f"\nTESZTELÉS: {question}")
 
         inputs = {
             'topic': question,
@@ -111,22 +111,6 @@ def replay():
     except Exception as e:
         raise Exception(f"An error occurred while replaying the crew: {e}")
 
-def test():
-    """
-    Test the crew execution and returns the results.
-    """
-    question = input(": ")
-
-    inputs = {
-        'topic': question,
-        'current_year': datetime.now().year
-    }
-
-    try:
-        JogiAgent().crew().test(n_iterations=int(sys.argv[1]), eval_llm=sys.argv[2], inputs=inputs)
-
-    except Exception as e:
-        raise Exception(f"An error occurred while testing the crew: {e}")
 
 def run_with_trigger():
     """
