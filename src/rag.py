@@ -10,18 +10,13 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_google_genai import ChatGoogleGenerativeAI
 
-# =========================
-# 1. BEÁLLÍTÁSOK
-# =========================
+# Setup
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CHROMA_PATH = os.path.abspath(os.path.join(BASE_DIR, "../chroma_db"))
 DATA_PATH = os.path.abspath(os.path.join(BASE_DIR, "../pdf"))
 RETRIEVAL_K = 5
 
 
-# =========================
-# 2. SEGÉD FUNKCIÓK
-# =========================
 def load_documents():
     document_loader = PyPDFDirectoryLoader(DATA_PATH)
     return document_loader.load()
@@ -44,7 +39,6 @@ def detect_law_name(source_path: str) -> str:
 
 def detect_section_type(section_id: str) -> str:
     section_id = section_id.strip()
-    # A preambulumot csak akkor detektáljuk, ha tényleg az
     if "cikk" in section_id.lower():
         return "cikk"
     if "§" in section_id:
@@ -62,9 +56,7 @@ def clean_id_text(text: str) -> str:
     )
 
 
-# =========================
-# 3. DARABOLÁS
-# =========================
+# Darabolás
 def split_documents(documents: list[Document]):
     """
     Egy chunk = egy jogi egység.
@@ -78,7 +70,6 @@ def split_documents(documents: list[Document]):
         source = doc.metadata.get("source", "unknown")
         docs_by_source.setdefault(source, []).append(doc)
 
-    # Egyetlen regex, de a találatokat jogi egységként kezeljük
     section_pattern = re.compile(
         r'(?m)^\s*((?:\d+:\d+|\d+)\.\s*§|\d+\.\s*§|\d+\.\s*[Cc]ikk)\s*'
     )
@@ -89,7 +80,6 @@ def split_documents(documents: list[Document]):
 
         matches = list(section_pattern.finditer(full_text))
 
-        # Ha nincs struktúra a szövegben, akkor egyben mentjük
         if not matches:
             law_name = detect_law_name(source)
             all_chunks.append(
@@ -133,9 +123,7 @@ def split_documents(documents: list[Document]):
     return all_chunks
 
 
-# =========================
-# 4. EMBEDDING
-# =========================
+# Embedding
 def get_embedding_function():
     load_dotenv()
     api_key = os.getenv("GOOGLE_API_KEY")
@@ -145,9 +133,7 @@ def get_embedding_function():
     )
 
 
-# =========================
-# 5. CHROMA FELÉPÍTÉS
-# =========================
+# Buildibg ChromaDB
 def add_chroma(chunks: list[Document]):
     db = Chroma(
         persist_directory=CHROMA_PATH,
@@ -205,9 +191,6 @@ def add_chroma(chunks: list[Document]):
         time.sleep(2)
 
 
-# =========================
-# 6. KÉRDEZÉS
-# =========================
 def query_rag(query_text: str):
     db = Chroma(
         persist_directory=CHROMA_PATH,
@@ -254,76 +237,6 @@ def query_rag(query_text: str):
     return formatted_context
 
 
-    # Mivel most még a main()-ben teszteljük, lefuttatjuk az LLM-et is:
-    # PROMPT_TEMPLATE = """
-    # Te egy tűpontos jogi asszisztens vagy. KIZÁRÓLAG a megadott kontextus alapján válaszolj.
-    #
-    # SZABÁLYOK:
-    # - Csak a kontextusban szereplő információkat használd.
-    # - Tilos bármit kitalálni vagy feltételezni.
-    # - Ha a válasz logikailag következik a kontextusból, vond le a következtetést, de jelezd, ha a pontos jogszabályi hely hiányos.
-    # - Ha egy cikk vagy paragrafus nem szerepel szó szerint a kontextusban: TILOS megemlíteni.
-    # - Ha a több darabban látod ugyanazt a cikkelyt (pl. két "88. cikk" nevű chunk), akkor próbáld meg őket fejben összerakni
-    # - Ha a pontos joghely nem szerepel szó szerint a kontextusban, ne nevezd meg.
-    # - Ha bizonytalan vagy, mondd azt, hogy a kontextusból nem állapítható meg biztosan.
-    # - Ne használj más törvényből származó joghelyet, ha a kérdés nem erre kérdez rá.
-    # - Ha a jogszabály szövegéből logikai úton egyértelmű következtetés vonható le, akkor azt határozottan fogalmazd meg.
-    #
-    # KONTEXTUS:
-    # {context}
-    #
-    # KÉRDÉS:
-    # {question}
-    #
-    #
-    # VÁLASZ FORMÁTUMA (Szigorúan tartsd be ezt a struktúrát!):
-    #
-    # RÖVID VÁLASZ:
-    # [Egy-két mondatos, egyértelmű válasz a kérdésre: Igen/Nem/Részben, stb.]
-    #
-    # JOGI INDOKOLÁS:
-    # [Részletes, kifejtett jogi elemzés bekezdésekre bontva, kizárólag a kontextus alapján.]
-    #
-    # JOGSZABÁLYI HIVATKOZÁSOK:
-    # - [Törvény neve] [Pontos cikk/paragrafus száma]
-    #
-    # BIZONYTALANSÁG / KIVÉTELEK:
-    # [Ha a kontextus hiányos, vagy vannak speciális kivételek, itt említsd meg. Ha nincs, írd azt: "Nincs."]
-    # """
-    #
-    # prompt_template = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
-    # # Beletoljuk az új, szuper-strukturált kontextusunkat! 💅
-    # prompt = prompt_template.format(context=formatted_context, question=query_text)
-    #
-    # llm = ChatGoogleGenerativeAI(
-    #     model="gemini-2.5-flash",
-    #     temperature=0
-    # )
-    #
-    # response_text = llm.invoke(prompt)
-    #
-    # # Visszaadjuk a választ ÉS az új JSON-ready forrásokat!
-    # print("\n" + "=" * 50)
-    # print("VÁLASZ:")
-    # print(response_text.content)
-    #
-    # print("\nFORRÁSOK (JSON-ready az Agentnek):")
-    # import json
-    #
-    # seen = set()
-    # dedup_sources = []
-    # for item in source_list:
-    #     key = (item["source"], item["section_id"])
-    #     if key not in seen:
-    #         seen.add(key)
-    #         dedup_sources.append(item)
-    # print(json.dumps(dedup_sources, indent=2, ensure_ascii=False))
-    #
-    # print("=" * 50)
-    #
-    # return response_text.content
-
-
 def build_rag():
     print("Rag építése elkezdődött!")
     documents = load_documents()
@@ -331,48 +244,48 @@ def build_rag():
         print("Üres a mappa! Tegyél bele egy PDF-et!")
         return
 
-    print(f"{len(documents)} oldal beolvasva. ✨")
+    print(f"{len(documents)} oldal beolvasva.")
 
     chunks = split_documents(documents)
     print(f"{len(chunks)} szeletre vágva.")
 
     add_chroma(chunks)
-    print("Adatbázis frissítve, te kész is vagy, queen!")
+    print("Adatbázis frissítve")
 
-# =========================
-# 7. FŐFOLYAMAT
-# =========================
-def main():
-    print("Indul a RAG építés... 🎉")
+
+
+def main(test_mode: bool = False):
+    print("Indul a RAG építése...")
 
     build_rag()
 
-    test_questions = [
-        # --- GDPR jogok (csapda: túl általános + összekeverhető cikkek) ---
-        "Felsorolható-e a GDPR alapján az 'információhoz való jog' mint önálló érintetti jog, és melyik cikk szabályozza pontosan?",
-        "Az adathordozhatósághoz való jog minden adatkezelési jogalap esetén érvényesül?",
-        "A GDPR szerint a hozzájárulás visszavonása érinti-e a korábbi adatkezelés jogszerűségét?",
+    if test_mode:
+        test_questions = [
+            # --- GDPR jogok (csapda: túl általános + összekeverhető cikkek) ---
+            "Felsorolható-e a GDPR alapján az 'információhoz való jog' mint önálló érintetti jog, és melyik cikk szabályozza pontosan?",
+            "Az adathordozhatósághoz való jog minden adatkezelési jogalap esetén érvényesül?",
+            "A GDPR szerint a hozzájárulás visszavonása érinti-e a korábbi adatkezelés jogszerűségét?",
 
-        # --- elfeledtetés (csapda: túl széles / kivételek / jogalap keverés) ---
-        "Az elfeledtetéshez való jog automatikusan alkalmazandó minden adatkezelés esetén?",
-        "Ha egy adatot közérdekből kezelnek, akkor kérhető-e annak törlése a GDPR szerint?",
-        "A törléshez való jog és az adatkezelés korlátozása ugyanazt jelenti-e a GDPR-ban?",
+            # --- elfeledtetés (csapda: túl széles / kivételek / jogalap keverés) ---
+            "Az elfeledtetéshez való jog automatikusan alkalmazandó minden adatkezelés esetén?",
+            "Ha egy adatot közérdekből kezelnek, akkor kérhető-e annak törlése a GDPR szerint?",
+            "A törléshez való jog és az adatkezelés korlátozása ugyanazt jelenti-e a GDPR-ban?",
 
-        # --- hozzájárulás (csapda: definíció vs feltételek keverése) ---
-        "Elég-e a GDPR szerint az, ha a felhasználó nem tiltakozik az adatkezelés ellen, hogy az hozzájárulásnak minősüljön?",
-        "A GDPR szerint mindig érvénytelen a hozzájárulás, ha szolgáltatás igénybevételéhez kötik?",
-        "Egy előre kipipált checkbox elfogadható hozzájárulásnak minősülhet valaha a GDPR szerint?",
+            # --- hozzájárulás (csapda: definíció vs feltételek keverése) ---
+            "Elég-e a GDPR szerint az, ha a felhasználó nem tiltakozik az adatkezelés ellen, hogy az hozzájárulásnak minősüljön?",
+            "A GDPR szerint mindig érvénytelen a hozzájárulás, ha szolgáltatás igénybevételéhez kötik?",
+            "Egy előre kipipált checkbox elfogadható hozzájárulásnak minősülhet valaha a GDPR szerint?",
 
-        # --- Mt + GDPR keverés (csapda: rossz jogalap / túl specifikus állítások) ---
-        "A munkáltató a GDPR alapján bármilyen személyes adatot kérhet a munkavállalótól, ha az a munkavégzéshez kapcsolódik?",
-        "A biometrikus adatok kezelése a Munka Törvénykönyve szerint mindig megengedett a beléptető rendszerekhez?",
-        "A munkavállaló hozzájárulása elegendő jogalap-e minden munkaviszonnyal kapcsolatos adatkezeléshez?",
-        "A GDPR 88. cikk teljes mértékben felülírja a magyar Munka Törvénykönyv adatkezelési szabályait?"
-    ]
+            # --- Mt + GDPR keverés (csapda: rossz jogalap / túl specifikus állítások) ---
+            "A munkáltató a GDPR alapján bármilyen személyes adatot kérhet a munkavállalótól, ha az a munkavégzéshez kapcsolódik?",
+            "A biometrikus adatok kezelése a Munka Törvénykönyve szerint mindig megengedett a beléptető rendszerekhez?",
+            "A munkavállaló hozzájárulása elegendő jogalap-e minden munkaviszonnyal kapcsolatos adatkezeléshez?",
+            "A GDPR 88. cikk teljes mértékben felülírja a magyar Munka Törvénykönyv adatkezelési szabályait?"
+        ]
 
-    for question in test_questions:
-        print(f"\n🔍 TESZTELÉS: {question}")
-        query_rag(question)
+        for question in test_questions:
+            print(f"\nTESZTELÉS: {question}")
+            query_rag(question)
 
     query_text = input(": ")
     while query_text != "break":
