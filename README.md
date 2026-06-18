@@ -96,7 +96,7 @@ Ha még nincs telepítve a `uv` csomagkezelő:
 pip install uv
 ```
 
-Hozd létre a virtuális környezetet és szinkronizáld a függőségeket a `pyproject.toml` alapján:
+Hozza létre a virtuális környezetet és szinkronizálja a függőségeket a `pyproject.toml` alapján:
 ```bash
 # Projekt beállítása, virtuális környezet létrehozása és szinkronizálás:
 uv sync
@@ -104,21 +104,21 @@ uv sync
 # Virtuális környezet aktiválása (opcionális, mert az `uv run` aktiválás nélkül is működik):
 source .venv/bin/activate
 ```
-Alternatívaként a CrewAI CLI segítségével is telepíthetsz:
+Alternatívaként a CrewAI CLI segítségével is telepíthet:
 ```bash
 crewai install
 ```
 
 ### 2. Környezeti változók beállítása
 
-Másold le a `.env.example` fájlt `.env` néven:
+Másolja le a `.env.example` fájlt `.env` néven:
 ```bash
 cp .env.example .env
 ```
 
-Nyisd meg a `.env` fájlt, és add meg a szükséges konfigurációkat:
+Nyissa meg a `.env` fájlt, és adja meg a szükséges konfigurációkat:
 ```env
-GOOGLE_API_KEY=az-on-api-kulcsod      # Google Gemini API kulcs a RAG-hoz és a modellekhez
+GOOGLE_API_KEY=az-on-api-kulcsa      # Google Gemini API kulcs a RAG-hoz és a modellekhez
 MODEL=gemini/gemini-2.5-flash-lite    # Az LLM modell, amit a CrewAI használ
 CREWAI_TRACING_ENABLED=false          # CrewAI nyomkövetés (igény szerint bekapcsolható)
 ```
@@ -131,7 +131,7 @@ A projekt futtatására több lehetőség is rendelkezésre áll a `pyproject.to
 
 ### 1. Interaktív Jogi Asszisztens indítása (CLI)
 
-Ez az indítási mód egy interaktív konzolt nyit meg, ahol folyamatosan tehetsz fel kérdéseket az ügynököknek. A kilépéshez írd be a `break` szót.
+Ez az indítási mód egy interaktív konzolt nyit meg, ahol folyamatosan tehet fel kérdéseket az ügynököknek. A kilépéshez írja be a `break` szót.
 
 **CrewAI paranccsal:**
 ```bash
