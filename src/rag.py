@@ -163,10 +163,10 @@ def add_chroma(chunks: list[Document]):
             new_chunks.append(chunk)
 
     if len(new_chunks) == 0:
-        print("Minden friss, nincs mit tölteni! 💅")
+        print("Minden friss, nincs mit tölteni!")
         return
 
-    print(f"Új dokumentumok hozzáadása: {len(new_chunks)} db ✨")
+    print(f"Új dokumentumok hozzáadása: {len(new_chunks)} db")
 
     batch_size = 100
     for i in range(0, len(new_chunks), batch_size):
@@ -287,7 +287,7 @@ def main(test_mode: bool = False):
 
     query_text = input(": ")
     while query_text != "break":
-        query_rag(query_text)
+        print(query_rag(query_text))
         query_text = input(": ")
 
 
